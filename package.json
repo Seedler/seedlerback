@@ -10,12 +10,14 @@
     "url": "https://github.com/Asondo/seedlerback.git"
   },
   "dependencies": {
+    "cors": "^2.8.4",
     "express": "latest",
     "hash-sum": "^1.0.2",
     "log4js": "^1.1.1",
     "mongodb": "^3.0.2",
     "redis": "^2.8.0",
-    "require-all": "^2.2.0"
+    "require-all": "^2.2.0",
+    "body-parser": "latest"
   },
   "scripts": {
     "start": "node app.js"
