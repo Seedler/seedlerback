@@ -1,0 +1,23 @@
+{
+  "name": "seedlerback",
+  "productName": "Seedler",
+  "description": "Plant the seeds of information and put everything together in different views",
+  "version": "0.0.1",
+  "private": false,
+  "main": "./src/main-process/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Asondo/seedlerback.git"
+  },
+  "dependencies": {
+    "express": "latest",
+    "hash-sum": "^1.0.2",
+    "mongodb": "^3.0.2",
+    "log4js": "^1.1.1"
+  },
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Dmitriy Asondo",
+  "license": "MTI"
+}
