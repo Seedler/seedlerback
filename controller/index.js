@@ -28,10 +28,10 @@ function throwResponseError(code = 418, message = 'Unknown reason') {
  * Список допустимых методов и действий находится в файле api в возвращаемой секции
  *
  * @param {Object} req
- * @param {Object} api
+ * @param {Object} apiMethods
  * @returns {{requestHandler: Function, methodName: String, apiMethods: Object, version: String}}
  */
-function getMethodData(req = {}, api = {}) {
+function getMethodData(req = {}, apiMethods = {}) {
     const {
         url = '',
         params = {},
@@ -43,15 +43,9 @@ function getMethodData(req = {}, api = {}) {
         version = '',
     } = params;
 
-    const apiMethods = api[version];
-
-    if (!apiMethods) {
-        throwResponseError(404, `Undefined version ${version} in ${url}`);
-    }
-
-    let methodName = action;
-    if (type) {
-        methodName += type[0].toUpperCase() + type.slice(1);
+    let methodName = type;
+    if (action) {
+        methodName = action + type[0].toUpperCase() + type.slice(1);
     }
 
     const requestHandler = apiMethods[methodName];
@@ -138,6 +132,7 @@ function routeHandler(req = {}, res = {}, api = {}) {
         })
         .then(result => {
             // Send response to the client
+            logger.info(`Send response with result for url ${req.url}`);
             return sendResponse(res, result);
         })
         .catch(err => {
@@ -147,8 +142,6 @@ function routeHandler(req = {}, res = {}, api = {}) {
 }
 
 function sendResponse(res = {}, result = {}) {
-    logger.info(`Send response with result for url ${req.url}`);
-
     const statusCode = result[sResponseCode] || 200;
     if (statusCode !== 200) {
         try {

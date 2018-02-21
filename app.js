@@ -5,6 +5,8 @@ const requireLinker = require('./libs/requireLinker');
 // Use require('seedler:config') from everywhere
 requireLinker.link('seedler', './config');
 requireLinker.link('seedler', './package');
+requireLinker.link('seedler', './controller');
+requireLinker.link('seedler', './api');
 // Use require('seedler:libs/libraryName') from everywhere
 requireLinker.link('seedler', './libs');
 
@@ -14,19 +16,18 @@ const logger = config.getLogger('WebServer');
 
 // Express Router and middleware
 const express = require('express');
+// Special middleware to add setup-stages
 const app = launch(express());
-const router = express.Router();
 
 Object.assign(config, {
     app,
-    router,
 });
 
 app
     .stage('./setup/mongodb')
     // .stage('./setup/redis')
     .stage('./setup/expressMiddleware')
-    .stage('./setup/controller')
+    .stage('./setup/router')
     .run
     .then(() => {
         const {
