@@ -43,9 +43,9 @@ function getMethodData(req = {}, apiMethods = {}) {
         version = '',
     } = params;
 
-    let methodName = type;
-    if (action) {
-        methodName = action + type[0].toUpperCase() + type.slice(1);
+    let methodName = action;
+    if (type) {
+        methodName += type[0].toUpperCase() + type.slice(1);
     }
 
     const requestHandler = apiMethods[methodName];

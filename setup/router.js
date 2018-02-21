@@ -7,7 +7,7 @@ const express = require('express');
 const router = express.Router();
 
 function setRoutesForModule(version, moduleName, module) {
-    router.all(`/${version}/${moduleName}/:type`, (req, res) => {
+    router.all(`/${version}/${moduleName}/:action`, (req, res) => {
         controller.routeHandler(req, res, module);
     });
     router.all(`/${version}/${moduleName}/:type/:action`, (req, res) => {
