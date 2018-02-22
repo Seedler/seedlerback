@@ -18,6 +18,6 @@ module.exports = function() {
     app.use('/', router);
 
     // Other versions
-    router.all(`/:version/:apiName/:action`, routeHandler);
-    router.all(`/:version/:apiName/:type/:action`, routeHandler);
+    router.all(`/api/:version/:apiName/:action`, routeHandler);
+    router.all(`/api/:version/:apiName/:type/:action`, routeHandler);
 };
