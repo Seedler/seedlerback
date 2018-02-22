@@ -1,10 +1,13 @@
 'use strict';
 
 const config = require('seedler:config');
-const logger = config.getLogger('Controller initialization');
+const logger = config.getLogger('Router');
 const controller = require('seedler:controller');
 const express = require('express');
 const router = express.Router();
+const {
+    app = {},
+} = config;
 
 function setRoutesForModule(version, moduleName, module) {
     router.all(`/${version}/${moduleName}/:action`, (req, res) => {
@@ -23,7 +26,7 @@ function setRoutesForVersion(version = 'v1', modules = {}) {
     }
 }
 
-function setRoutes(modules = {}) {
+function setModulesRoutes(modules = {}) {
     const versions = Object.keys(modules);
     for (let version of versions) {
         const versionModules = modules[version];
@@ -33,12 +36,9 @@ function setRoutes(modules = {}) {
 
 module.exports = function() {
     logger.info(`Try to initialize api controller`);
-    const {
-        app = {},
-    } = config;
     // Set express app use router
     app.use('/', router);
 
     const apiModules = require('require-all')(config.rootDir + '/api');
-    setRoutes(apiModules);
+    setModulesRoutes(apiModules);
 };

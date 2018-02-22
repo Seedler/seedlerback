@@ -12,6 +12,7 @@ const sRequestUrl = Symbol('sRequestUrl');
 const sRequestMethod = Symbol('sRequestMethod');
 const sRequestHeaders = Symbol('sRequestHeaders');
 const sResponseCode = Symbol('sResponseCode');
+const sAuthorizedUser = Symbol('sAuthorizedUser');
 const sSecure = Symbol('sSecure');
 
 const packageDescription = `${packageJSON.name}#${packageJSON.version}`;
@@ -84,6 +85,7 @@ function routeHandler(req = {}, res = {}, api = {}) {
                 params,
                 url,
                 body,
+                user,
             } = req || {};
 
             const {
@@ -100,6 +102,7 @@ function routeHandler(req = {}, res = {}, api = {}) {
             body[sRequestParams] = params;
             body[sMethodName] = methodName;
             body[sMethodVersion] = apiVersionName;
+            body[sAuthorizedUser] = user;
 
             // Include headers into response object
             setControlHeaders(res, req.body);
@@ -167,6 +170,7 @@ module.exports = {
     sRequestMethod,
     sRequestHeaders,
     sResponseCode,
+    sAuthorizedUser,
     sSecure,
 
     packageDescription,

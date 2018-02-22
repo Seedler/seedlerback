@@ -17,16 +17,13 @@ const logger = config.getLogger('WebServer');
 // Express Router and middleware
 const express = require('express');
 // Special middleware to add setup-stages
-const app = launch(express());
-
-Object.assign(config, {
-    app,
-});
+const app = config.app = launch(express());
 
 app
     .stage('./setup/mongodb')
-    // .stage('./setup/redis')
-    .stage('./setup/expressMiddleware')
+    .stage('./setup/redis')
+    .stage('./setup/express')
+    .stage('./setup/passport')
     .stage('./setup/router')
     .run
     .then(() => {
