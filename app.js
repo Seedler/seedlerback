@@ -4,7 +4,6 @@
 const requireLinker = require('./libs/requireLinker');
 // Use require('seedler:config') from everywhere
 requireLinker.link('seedler', './config');
-requireLinker.link('seedler', './package');
 requireLinker.link('seedler', './controller');
 requireLinker.link('seedler', './api');
 // Use require('seedler:libs/libraryName') from everywhere

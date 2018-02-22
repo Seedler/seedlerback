@@ -3,6 +3,7 @@
 const Module = require('module');
 const path = require('path');
 
+const _knownPaths = {};
 const linkedModulesList = [];
 
 function getAbsolutePath(dir) {
@@ -20,6 +21,12 @@ function getModuleName(dir = '') {
 // Module._resolveFilename (require) middleware
 const resolveFileName = Module._resolveFilename;
 Module._resolveFilename = (requiredPath, parent, isMain) => {
+    let modulePath = _knownPaths[requiredPath];
+    // No need to parse known path
+    if (modulePath) {
+        return resolveFileName.call(Module, modulePath, parent, isMain);
+    }
+
     // TODO: may be need optimization with only ':'-routes permission for next analysis
     const pathParts = requiredPath.split('/');
     // Main linker part ('seedler:config' for example)
@@ -30,15 +37,20 @@ Module._resolveFilename = (requiredPath, parent, isMain) => {
     // Find main linker parts in known array
     const pathItem = linkedModulesList.find(pathItem => pathItem.moduleLink === pathRouteName);
     if (pathItem) {
-        requiredPath = pathItem.modulePath;
+        modulePath = pathItem.modulePath;
 
         if (childPath) {
-            requiredPath += `/${childPath}`;
+            modulePath += `/${childPath}`;
         }
     }
+    else {
+        modulePath = requiredPath;
+    }
 
-    // require file
-    return resolveFileName.call(Module, requiredPath, parent, isMain);
+    // Add module path to known paths (cache)
+    _knownPaths[requiredPath] = modulePath;
+    // require file and save to localCache
+    return resolveFileName.call(Module, modulePath, parent, isMain);
 };
 
 module.exports = {

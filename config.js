@@ -1,5 +1,6 @@
 'use strict';
 
+const packageJSON = require('./package');
 const Logger = require('log4js');
 const logLevel = process.env.LOG_LEVEL || 'DEBUG';
 
@@ -15,6 +16,7 @@ module.exports = {
     },
 
     rootDir: __dirname,
+    packageDescription: `${packageJSON.name}#${packageJSON.version}`,
 
     server: {
         port: process.env.PORT || 3000,
