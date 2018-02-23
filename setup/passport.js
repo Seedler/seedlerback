@@ -8,6 +8,7 @@ const user = {
     _id: 1,
     username: 'test',
     password: '12345',
+    permissionLevel: 1,
 };
 
 function localLoginHandler(login, password, done) {
@@ -66,17 +67,5 @@ module.exports = function() {
     passport.deserializeUser((id, done) => {
         logger.debug(`Auth middleware want to get user by id ${id}`);
         done(null, user);
-    });
-
-    // Log in/out routes
-    /** @namespace app.post */
-    /** @namespace passport.authenticate */
-    app.all('/login', passport.authenticate('local', {
-        successRedirect: '/',
-        failureRedirect: '/login',
-    }));
-    app.all('/logout', (req, res) => {
-        req.logout();
-        res.redirect('/');
     });
 };

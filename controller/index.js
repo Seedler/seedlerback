@@ -11,9 +11,35 @@ const sRequestUrl = Symbol('sRequestUrl');
 const sRequestMethod = Symbol('sRequestMethod');
 const sRequestHeaders = Symbol('sRequestHeaders');
 const sResponseCode = Symbol('sResponseCode');
+const sApiResponseCode = Symbol('sApiResponseCode');
+const sRequestObject = Symbol('sRequestObject');
+const sResponseObject = Symbol('sResponseObject');
 const sAuthorizedUser = Symbol('sAuthorizedUser');
 const sSecure = Symbol('sSecure');
 
+// TODO: Put in a separate files
+const STATUS_CODES = Object.freeze({
+    success: 200,
+
+    badRequest: 400,
+    unauthorized: 401,
+    notFound: 404,
+    notAllowed: 405,
+    teapot: 418,
+    locked: 423,
+
+    serverError: 500,
+});
+const API_CODES = Object.freeze({
+    success: 200,
+    unknown: 400,
+    accessDenied: 401,
+    userNotFound: 402,
+    unauthorized: 403,
+    apiNotFound: 404,
+    apiMethodNotFound: 405,
+    alreadyAuthorized: 406,
+});
 const PERMISSION_LEVELS = Object.freeze({
     all: 0, // Public permissions
     user: 1, // Only for registered users and upper
@@ -26,9 +52,10 @@ const {
     packageDescription,
 } = config;
 
-function throwResponseError(code = 418, message = 'Unknown reason') {
+function throwResponseError(code = STATUS_CODES.teapot, apiCode = API_CODES.unknown, message = 'Unknown reason') {
     const err = new Error(message);
     err[sResponseCode] = code;
+    err[sApiResponseCode] = apiCode;
     throw err;
 }
 
@@ -48,7 +75,7 @@ function wrapMethod(method, params = {}) {
  * Список допустимых методов и действий находится в файле api в возвращаемой секции
  *
  * @param {Object} req
- * @returns {{requestHandler: Function, apiName: String, methodName: String, api: Object, version: String}}
+ * @returns {{requestHandler: Function, apiName: String, methodName: String, api: Object, version: String, permissionLevel: number}}
  */
 function getMethodData(req = {}) {
     const {
@@ -65,9 +92,8 @@ function getMethodData(req = {}) {
 
     // Require js api file from ./api dir
     const api = require(`seedler:api/${version}/${apiName}`);
-
     if (typeof api !== 'object') {
-        throwResponseError(404, `Undefined api: url: ${url}`);
+        throwResponseError(STATUS_CODES.notFound, API_CODES.apiNotFound, `Undefined api: url: ${url}`);
     }
 
     let methodName = action;
@@ -77,8 +103,10 @@ function getMethodData(req = {}) {
 
     const requestHandler = api[methodName];
     if (typeof requestHandler !== 'function') {
-        throwResponseError(404, `Undefined api method: ${methodName} from url: ${url}`);
+        throwResponseError(STATUS_CODES.notFound, API_CODES.apiMethodNotFound, `Undefined api method: ${methodName} from url: ${url}`);
     }
+
+    const permissionLevel = requestHandler.permissionLevel;
 
     return {
         api,
@@ -86,6 +114,7 @@ function getMethodData(req = {}) {
         methodName,
         version,
         requestHandler,
+        permissionLevel,
     };
 }
 
@@ -118,10 +147,17 @@ function routeHandler(req = {}, res = {}) {
             const {
                 requestHandler,
                 methodName,
-                apiVersionName
+                apiVersionName,
+                permissionLevel,
             } = methodData;
 
-            logger.info(`WebServer: Get params for route ${url} to use in method ${methodName}, user ${user}`);
+            logger.debug(`WebServer: Get params for route ${url} to use in method ${methodName}, user ${user}`);
+
+            // Check permissions
+            checkPermissions(user, permissionLevel);
+
+            body[sRequestObject] = req;
+            body[sResponseObject] = res;
 
             body[sRequestUrl] = url;
             body[sRequestHeaders] = headers;
@@ -136,42 +172,50 @@ function routeHandler(req = {}, res = {}) {
 
             return requestHandler(body);
         })
-        .then(result => {
-            const response = {
-                type: 'success',
-                body: result,
-            };
-
-            if (typeof result === 'object') {
-                const responseCode = result[sResponseCode];
-                if (responseCode) {
-                    response[sResponseCode] = responseCode;
-                }
-            }
-
-            return response;
-        })
-        .catch(err => {
-            const errorCode = err[sResponseCode] || '500';
-
-            return {
-                type: 'error',
-                body: err.toString(),
-                [sResponseCode]: errorCode,
-            };
-        })
-        .then(result => {
-            // Send response to the client
-            logger.info(`Send response with result for url ${req.url}`);
-            return sendResponse(res, result);
-        })
+        .then(result => createResponseObject(result))
+        .catch(err => createResponseObject(err))
+        .then(result => sendResponse(req, res, result))
         .catch(err => {
             logger.error(`routesHandler: Handling ${req.url} Unknown Error:`, err);
         })
     ;
 }
 
-function sendResponse(res = {}, result = {}) {
+function createResponseObject(resultObject = {}) {
+    // Error response object is specific and should be handled separately
+    if (resultObject instanceof Error) {
+        const errorCode = resultObject[sResponseCode] || STATUS_CODES.serverError;
+        const apiCode = resultObject[sApiResponseCode] || API_CODES.unknown;
+
+        return {
+            type: 'error',
+            code: apiCode,
+            body: resultObject.toString(),
+            [sResponseCode]: errorCode,
+        };
+    }
+
+    // Standard response object
+    const apiCode = resultObject[sApiResponseCode] || API_CODES.success;
+    const responseObject = {
+        type: 'success',
+        code: apiCode,
+        body: resultObject,
+    };
+
+    if (typeof resultObject === 'object') {
+        const responseCode = resultObject[sResponseCode];
+        if (responseCode) {
+            responseObject[sResponseCode] = responseCode;
+        }
+    }
+
+    return responseObject;
+}
+
+function sendResponse(req = {}, res = {}, result = {}) {
+    logger.debug(`sendResponse: ${req.url}`);
+
     const statusCode = result[sResponseCode] || 200;
     if (statusCode !== 200) {
         try {
@@ -186,11 +230,40 @@ function sendResponse(res = {}, result = {}) {
     return true;
 }
 
+function accessDenied(user, methodPermissions = 0) {
+    let accessDenied = false;
+
+    if (!user) {
+        if (methodPermissions > 0) {
+            accessDenied = true;
+        }
+    }
+    else if (user.permissionLevel < methodPermissions) {
+        accessDenied = true;
+    }
+
+    return accessDenied;
+}
+
+function checkPermissions(user, methodPermissions = 0) {
+    const isAccessDenied = accessDenied(user, methodPermissions);
+    if (isAccessDenied) {
+        if (user) {
+            throwResponseError(STATUS_CODES.notAllowed, API_CODES.accessDenied, 'You have no power here');
+        }
+        else {
+            throwResponseError(STATUS_CODES.unauthorized, API_CODES.unauthorized, 'You have no power. Authorize, please');
+        }
+    }
+}
+
 module.exports = {
     // Middleware for all api-requests
     routeHandler,
     wrapMethod,
 
+    sRequestObject,
+    sResponseObject,
     sMethodName,
     sMethodVersion,
     sRequestParams,
@@ -202,6 +275,9 @@ module.exports = {
     sSecure,
 
     PERMISSION_LEVELS,
+    API_CODES,
+    STATUS_CODES,
 
+    throwResponseError,
     packageDescription,
 };
