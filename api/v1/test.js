@@ -1,13 +1,12 @@
 'use strict';
 
 const config = require('seedler:config');
-const logger = config.getLogger('test api');
+const logger = config.getLogger('api/v1/test');
 const controller = require('seedler:controller');
 
-const {
-    wrapMethod = func => func,
-    PERMISSION_LEVELS = {},
-} = controller;
+const wrapMethod = controller.wrapMethod || (func => func);
+
+logger.info(`Load api`);
 
 module.exports = {
     run: wrapMethod(function run(params = {}) {

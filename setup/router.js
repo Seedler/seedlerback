@@ -8,16 +8,14 @@ const router = express.Router();
 const {
     app = {},
 } = config;
-const {
-    routeHandler = (req, res, next) => next(),
-} = controller;
+const routeHandler = controller.routeHandler || ((req, res, next) => next());
 
 module.exports = function() {
     logger.info(`Try to initialize api controller`);
     // Set express app use router
-    app.use('/', router);
+    app.use('/api', router);
 
     // Other versions
-    router.all(`/api/:version/:apiName/:action`, routeHandler);
-    router.all(`/api/:version/:apiName/:type/:action`, routeHandler);
+    router.all(`/:version/:apiName/:action`, routeHandler);
+    router.all(`/:version/:apiName/:type/:action`, routeHandler);
 };

@@ -10,14 +10,14 @@ module.exports = function(done) {
     redisConnector.createClient()
         .then(redis => {
             config.redis = redis;
-            return redis.setAsync('test', {test: true})
+            return redis.setAsync('test', JSON.stringify({initialized: true}))
         })
         .then(() => config.redis.getAsync('test'))
         .then(data => {
-            logger.info(JSON.stringify(data, null, 2));
+            const parsedData = JSON.parse(data);
 
-            if (data.init !== true) {
-                throw new Error('Unexpected read/write operation');
+            if (parsedData.initialized !== true) {
+                throw new Error(`Error during initial read/write operation: ${data}`);
             }
         })
         .then(() => config.redis.delAsync('test'))

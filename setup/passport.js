@@ -12,14 +12,19 @@ const user = {
 
 function localLoginHandler(login, password, done) {
     logger.info(`Some shit happens! Passport want to auth user:`, login, password);
-    done(null, user);
+
+    if (user.password === password) {
+        return done(null, user, {message: 'woo-hoo!'});
+    }
+
+    return done(null, false, {message: 'nope!'});
 }
 
 module.exports = function() {
     logger.info(`Try to initialize authorization`);
     const passport = require('passport');
     const LocalStrategy = require('passport-local').Strategy;
-    const session = require("express-session");
+    const session = require('express-session');
     const RedisStore = require('connect-redis')(session);
 
     const {
@@ -35,6 +40,9 @@ module.exports = function() {
         secret: `seedlerSecureSecret12345`,
         resave: true,
         saveUninitialized: false,
+        cookie: {
+            secure: false
+        },
     }));
     /** @namespace passport.initialize */
     app.use(passport.initialize());
@@ -63,7 +71,7 @@ module.exports = function() {
     // Log in/out routes
     /** @namespace app.post */
     /** @namespace passport.authenticate */
-    app.post('/login', passport.authenticate('local', {
+    app.all('/login', passport.authenticate('local', {
         successRedirect: '/',
         failureRedirect: '/login',
     }));

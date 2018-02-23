@@ -121,7 +121,7 @@ function routeHandler(req = {}, res = {}) {
                 apiVersionName
             } = methodData;
 
-            logger.info(`WebServer: Get params for route ${url} to use in method ${methodName}`);
+            logger.info(`WebServer: Get params for route ${url} to use in method ${methodName}, user ${user}`);
 
             body[sRequestUrl] = url;
             body[sRequestHeaders] = headers;
