@@ -3,12 +3,12 @@
 const config = require('seedler:config');
 const logger = config.getLogger('Passport');
 
-// Debug test user
+// Debug test keeper
 const user = {
     _id: 1,
     username: 'test',
     password: '12345',
-    permissionLevel: 1,
+    accessLevel: 1,
 };
 
 function localLoginHandler(login, password, done) {

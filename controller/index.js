@@ -40,12 +40,19 @@ const API_CODES = Object.freeze({
     apiMethodNotFound: 405,
     alreadyAuthorized: 406,
 });
-const PERMISSION_LEVELS = Object.freeze({
+const ACCESS_LEVELS = Object.freeze({
     all: 0, // Public permissions
-    user: 1, // Only for registered users and upper
+    keeper: 1, // Only for registered users and upper
     support: 2, // Only for support managers (moderators) and upper
     root: 3, // Administrators only
     system: 4, // System private method
+
+    // Tenure privileges
+    poacher: 0, // let it be
+    watcher: 1, // Read only
+    surveyor: 2, // Read only with edit suggestions
+    tenant: 3, // Reader with editing permission
+    landowner: 4, // Full privileges for forest editing
 });
 
 const {
@@ -61,10 +68,10 @@ function throwResponseError(code = STATUS_CODES.teapot, apiCode = API_CODES.unkn
 
 function wrapMethod(method, params = {}) {
     const {
-        permissionLevel = PERMISSION_LEVELS.all,
+        accessLevel = ACCESS_LEVELS.all,
     } = params;
 
-    method.permissionLevel = permissionLevel;
+    method.accessLevel = accessLevel;
 
     return method;
 }
@@ -75,7 +82,7 @@ function wrapMethod(method, params = {}) {
  * Список допустимых методов и действий находится в файле api в возвращаемой секции
  *
  * @param {Object} req
- * @returns {{requestHandler: Function, apiName: String, methodName: String, api: Object, version: String, permissionLevel: number}}
+ * @returns {{requestHandler: Function, apiName: String, methodName: String, api: Object, version: String, accessLevel: number}}
  */
 function getMethodData(req = {}) {
     const {
@@ -106,7 +113,8 @@ function getMethodData(req = {}) {
         throwResponseError(STATUS_CODES.notFound, API_CODES.apiMethodNotFound, `Undefined api method: ${methodName} from url: ${url}`);
     }
 
-    const permissionLevel = requestHandler.permissionLevel;
+    const apiAccessLevel = api.accessLevel;
+    const accessLevel = requestHandler.accessLevel;
 
     return {
         api,
@@ -114,7 +122,8 @@ function getMethodData(req = {}) {
         methodName,
         version,
         requestHandler,
-        permissionLevel,
+        accessLevel,
+        apiAccessLevel,
     };
 }
 
@@ -148,13 +157,14 @@ function routeHandler(req = {}, res = {}) {
                 requestHandler,
                 methodName,
                 apiVersionName,
-                permissionLevel,
+                accessLevel = ACCESS_LEVELS.all,
+                apiAccessLevel = ACCESS_LEVELS.all,
             } = methodData;
 
             logger.debug(`WebServer: Get params for route ${url} to use in method ${methodName}, user ${user}`);
 
-            // Check permissions
-            checkPermissions(user, permissionLevel);
+            // Check permissions (api permissions has priority)
+            checkPermissions(user, Math.max(apiAccessLevel, accessLevel));
 
             body[sRequestObject] = req;
             body[sResponseObject] = res;
@@ -230,15 +240,15 @@ function sendResponse(req = {}, res = {}, result = {}) {
     return true;
 }
 
-function accessDenied(user, methodPermissions = 0) {
+function accessDenied(user, methodAccessLevel = 0) {
     let accessDenied = false;
 
     if (!user) {
-        if (methodPermissions > 0) {
+        if (methodAccessLevel > ACCESS_LEVELS.all) {
             accessDenied = true;
         }
     }
-    else if (user.permissionLevel < methodPermissions) {
+    else if (user.accessLevel < methodAccessLevel) {
         accessDenied = true;
     }
 
@@ -274,7 +284,7 @@ module.exports = {
     sAuthorizedUser,
     sSecure,
 
-    PERMISSION_LEVELS,
+    ACCESS_LEVELS,
     API_CODES,
     STATUS_CODES,
 

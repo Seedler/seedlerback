@@ -46,7 +46,7 @@ function login(params = {}) {
     } = params;
 
     // Deny duplicate login
-    if (req.user) {
+    if (req.keeper) {
         controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.alreadyAuthorized, 'You have to logout before login');
     }
 
@@ -63,5 +63,5 @@ function logout(params = {}) {
 
 module.exports = {
     login: controller.wrapMethod(login),
-    logout: controller.wrapMethod(logout, {permissionLevel: PERMISSION_LEVELS.user}),
+    logout: controller.wrapMethod(logout, {accessLevel: PERMISSION_LEVELS.keeper}),
 };
