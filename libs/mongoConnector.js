@@ -7,24 +7,6 @@ const MongoClient = require('mongodb').MongoClient;
 let dbObject;
 let dbClient;
 
-function getDataFromCursor(cursor) {
-    const stream = cursor.stream();
-    let result = [];
-
-    return new Promise((resolve, reject) => {
-        stream.on('data', doc => {
-            result.push(doc);
-        });
-        stream.on('error', error => {
-            reject(error);
-        });
-        stream.on('end', () => {
-            stream.close();
-            resolve(result);
-        });
-    });
-}
-
 function getCollection(collectionName = '', params = {}) {
     return new Promise((resolve, reject) => {
         dbObject.collection(collectionName, params, (err, collection) => {
