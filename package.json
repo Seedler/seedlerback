@@ -15,11 +15,13 @@
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "crypto-random-string": "^1.0.0",
+    "expect.js": "^0.3.1",
     "express": "latest",
     "express-session": "^1.15.6",
     "hash-sum": "^1.0.2",
     "is-equal": "^1.5.5",
     "log4js": "^1.1.1",
+    "mocha": "^5.0.1",
     "mongodb": "^3.0.2",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
@@ -27,7 +29,8 @@
     "sha1": "^1.1.1"
   },
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "mocha --exit"
   },
   "author": "Dmitriy Asondo",
   "license": "MIT"

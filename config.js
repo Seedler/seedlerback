@@ -1,5 +1,14 @@
 'use strict';
 
+// Special module to simplify factory-modules requiring (add own ids replacing paths)
+const requireLinker = require('./libs/requireLinker');
+// Use require('seedler:config') from everywhere
+requireLinker.link('seedler', './config');
+requireLinker.link('seedler', './controller');
+requireLinker.link('seedler', './api');
+// Use require('seedler:libs/libraryName') from everywhere
+requireLinker.link('seedler', './libs');
+
 const packageJSON = require('./package');
 const Logger = require('log4js');
 const logLevel = process.env.LOG_LEVEL || 'DEBUG';

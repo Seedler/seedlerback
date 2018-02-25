@@ -5,6 +5,7 @@ const logger = config.getLogger('mongoConnector');
 const isEqual = require('is-equal');
 const MongoClient = require('mongodb').MongoClient;
 let dbObject;
+let dbClient;
 
 function getDataFromCursor(cursor) {
     const stream = cursor.stream();
@@ -20,6 +21,18 @@ function getDataFromCursor(cursor) {
         stream.on('end', () => {
             stream.close();
             resolve(result);
+        });
+    });
+}
+
+function getCollection(collectionName = '', params = {}) {
+    return new Promise((resolve, reject) => {
+        dbObject.collection(collectionName, params, (err, collection) => {
+            if (err) {
+                return reject(err);
+            }
+
+            return resolve(collection);
         });
     });
 }
@@ -93,6 +106,7 @@ module.exports = {
         logger.info(`Try to connect to MongoDB using url: ${url}`);
         return MongoClient.connect(url, options)
             .then(client => {
+                dbClient = client;
                 const db = client.db(database);
 
                 dbObject = db;
@@ -210,23 +224,23 @@ module.exports = {
         } = options;
 
         // Get the documents collection
-        const collection = dbObject.collection(collectionName, {strict: true});
-        let promise = collection.insertMany(docs);
+        return getCollection(collectionName, {strict: true})
+            .then(collection => collection.insertMany(docs))
+            .then(result => {
+                if (returnNewDocuments) {
+                    const insertedIds = docs.map(doc => doc._id).filter(_id => _id);
+                    if (!insertedIds.length) {
+                        return [];
+                    }
 
-        if (returnNewDocuments) {
-            promise = promise.then(() => {
-                const insertedIds = docs.map(doc => doc._id).filter(_id => _id);
-                if (!insertedIds.length) {
-                    return [];
+                    const match = generateMatchObject({_id: insertedIds});
+
+                    return this.get(collectionName, {match});
                 }
 
-                const match = generateMatchObject({_id: insertedIds});
-
-                return this.get(collectionName, {match});
-            });
-        }
-
-        return promise;
+                return result;
+            })
+        ;
     },
 
     get(collectionName, params = {}, options = {}) {
@@ -238,20 +252,23 @@ module.exports = {
         } = params;
 
         // Get the documents collection
-        const collection = dbObject.collection(collectionName, {strict: true});
-        let cursor = collection.find(match, options);
+        return getCollection(collectionName, {strict: true})
+            .then(collection => {
+                let cursor = collection.find(match, options);
 
-        if (sort) {
-            cursor = cursor.sort(sort);
-        }
-        if (skip) {
-            cursor = cursor.skip(skip);
-        }
-        if (limit) {
-            cursor = cursor.limit(limit);
-        }
+                if (sort) {
+                    cursor = cursor.sort(sort);
+                }
+                if (skip) {
+                    cursor = cursor.skip(skip);
+                }
+                if (limit) {
+                    cursor = cursor.limit(limit);
+                }
 
-        return cursor.toArray();
+                return cursor.toArray();
+            })
+        ;
     },
 
     update(collectionName, params = {}, options = {}) {
@@ -262,11 +279,21 @@ module.exports = {
             multi = false,
         } = params;
 
-        // Get the documents collection
-        const collection = dbObject.collection(collectionName, {strict: true});
-        const method = multi ? 'updateMany' : 'updateOne';
+        const updateObject = {};
+        if (Object.keys(set).length) {
+            updateObject.$set = set;
+        }
+        if (Object.keys(unset).length) {
+            updateObject.$unset = unset;
+        }
 
-        return collection[method](match, {$set: set, $unset: unset}, options);
+        // Get the documents collection
+        return getCollection(collectionName, {strict: true})
+            .then(collection => {
+                const method = multi ? 'updateMany' : 'updateOne';
+                return collection[method](match, updateObject, options);
+            })
+        ;
     },
 
     delete(collectionName, params = {}) {
@@ -276,11 +303,17 @@ module.exports = {
         } = params;
 
         // Get the documents collection
-        const collection = dbObject.collection(collectionName, {strict: true});
-        const method = multi ? 'deleteMany' : 'deleteOne';
-
-        return collection[method](match);
+        return getCollection(collectionName, {strict: true})
+            .then(collection => {
+                const method = multi ? 'deleteMany' : 'deleteOne';
+                return collection[method](match);
+            })
+        ;
     },
 
     generateMatchObject,
+
+    closeConnection(force = false) {
+        return dbClient.close(force);
+    }
 };
