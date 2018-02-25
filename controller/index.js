@@ -39,6 +39,7 @@ const API_CODES = Object.freeze({
     apiNotFound: 404,
     apiMethodNotFound: 405,
     alreadyAuthorized: 406,
+    invalidInput: 407,
 });
 const ACCESS_LEVELS = Object.freeze({
     all: 0, // Public permissions

@@ -17,6 +17,7 @@ module.exports = {
         requireLinker.link('seedler', './api');
         // Use require('seedler:libs/libraryName') from everywhere
         requireLinker.link('seedler', './libs');
+        requireLinker.link('seedler', './models');
     },
 
     getLogger(env, lvl) {
