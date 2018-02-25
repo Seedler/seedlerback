@@ -77,6 +77,8 @@ describe('mongodbConnector connection and routines', () => {
         const match = mongoConnector.generateMatchObject({_id: testDoc._id});
         promise = promise
             .then(() => mongoConnector.delete(collectionName, {match}))
+            .then(() => mongoConnector.get(collectionName, {match}))
+            .then(itemList => expect(itemList).to.have.length(0))
         ;
         return promise.catch(err => expect(err).to.be(null));
     });
