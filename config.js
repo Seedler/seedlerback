@@ -41,7 +41,7 @@ module.exports = {
             {
                 name: 'keepers',
                 indexes: [
-                    {username: 1},
+                    {login: 1},
                     {email: 1},
                 ],
             },

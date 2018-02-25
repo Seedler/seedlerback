@@ -9,10 +9,10 @@ const {
     db = {},
 } = config;
 const {
-
     API_CODES = {},
     STATUS_CODES = {},
 } = controller;
+const collectionName = 'keepers';
 
 const restrictedLoginList = [
     'root',
@@ -91,6 +91,7 @@ module.exports = class Keeper {
         }
 
         const {
+            _id,
             login = '',
             name = '',
             email = '',
@@ -105,6 +106,7 @@ module.exports = class Keeper {
         const createdAt = new Date();
 
         return Object.assign(this, {
+            _id,
             login,
             name,
             email,
@@ -117,5 +119,46 @@ module.exports = class Keeper {
         });
     }
 
+    static getKeeper(params = {}) {
+        const match = db.generateMatchObject(params, ['_id', 'login', 'email']);
 
+        return db.get(collectionName, {match})
+            .then(resultList => {
+                const [keeper] = resultList;
+                if (!keeper) {
+                    controller.throwResponseError(STATUS_CODES.notFound, API_CODES.userNotFound, `getKeeper: Keeper not found by params: ${JSON.stringify(params)}`);
+                }
+
+                return new Keeper(keeper);
+            })
+        ;
+    }
+
+    setKeeper() {
+        const {
+            _id,
+        } = this;
+        if (_id) {
+            return this.updateKeeper();
+        }
+
+        // autoincrement _id will be add to this by object-link
+        return db.insert(collectionName, this, {autoIncrementId: true}).then(() => this);
+    }
+
+    updateKeeper() {
+        const {
+            _id,
+        } = this;
+        if (!_id) {
+            controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.invalidInput, `updateKeeper: Passed keeper item should be set by setKeeper first (db id is not exists)`);
+        }
+
+        // Create new instance to update into db
+        const preparedKeeper = new Keeper(this);
+        // Mongo dislikes $set on _id key
+        delete preparedKeeper._id;
+
+        return db.update(collectionName, {_id}, {set: preparedKeeper}).then(() => this);
+    }
 };
