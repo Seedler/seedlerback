@@ -28,7 +28,7 @@ const restrictedLoginList = [
 
 const loginPattern = /\w+(\.(?=\w))?\w*/i;
 const namePattern = /[a-z0-9\s]+/i;
-const passwordPattern = /[a-z0-9\s.]+/i;
+const passwordPattern = /[\w\s.,@$~#%&?*:;!^<>]+/i;
 
 const keeperModel = {
     login: {
