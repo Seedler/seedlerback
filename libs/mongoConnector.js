@@ -4,8 +4,29 @@ const config = require('../config');
 const logger = config.getLogger('mongoConnector');
 const isEqual = require('is-equal');
 const MongoClient = require('mongodb').MongoClient;
+
 let dbObject;
 let dbClient;
+
+function getNextId(collectionName, count = 0) {
+    if (!count) {
+        return Promise.resolve(count);
+    }
+
+    return dbObject
+        .collection('dbCounters')
+        .findOneAndUpdate({_id: collectionName}, {$set: {_id: collectionName}, $inc: {lastId: count}}, {upsert: true})
+        .then(result => {
+            // Returns null on insert (first upsert on document)
+            const value = result.value || {};
+            // Returns actual lastId (before the update)
+            const lastId = value.lastId || 0;
+
+            // Next id starts with +1
+            return lastId + 1;
+        })
+    ;
+}
 
 function getCollection(collectionName = '', params = {}) {
     return new Promise((resolve, reject) => {
@@ -201,11 +222,29 @@ module.exports = {
         }
 
         const {
-            returnNewDocuments,
+            autoIncrementId = true,
+            returnNewDocuments = false,
         } = options;
 
+        let promise = Promise.resolve();
+
+        if (autoIncrementId) {
+            const idCountToReserve = docs.length;
+
+            promise = promise
+                .then(() => getNextId(collectionName, idCountToReserve))
+                .then(nextId => {
+                    for (let i = 0; i < idCountToReserve; i++) {
+                        const doc = docs[i];
+                        doc._id = nextId++;
+                    }
+                })
+            ;
+        }
+
         // Get the documents collection
-        return getCollection(collectionName, {strict: true})
+        return promise
+            .then(() => getCollection(collectionName, {strict: true}))
             .then(collection => collection.insertMany(docs))
             .then(result => {
                 if (returnNewDocuments) {

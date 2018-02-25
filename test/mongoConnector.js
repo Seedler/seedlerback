@@ -47,7 +47,7 @@ describe('Test mongodbConnector', () => {
 
     it('Test insert document', () => {
         promise = promise
-            .then(() => mongoConnector.insert(collectionName, testDoc))
+            .then(() => mongoConnector.insert(collectionName, testDoc, {autoIncrementId: false}))
             .catch(err => expect(err).to.be(null))
         ;
         return promise;
@@ -86,6 +86,47 @@ describe('Test mongodbConnector', () => {
             .then(() => mongoConnector.delete(collectionName, {match}))
             .then(() => mongoConnector.get(collectionName, {match}))
             .then(itemList => expect(itemList).to.have.length(0))
+            .catch(err => expect(err).to.be(null))
+        ;
+        return promise;
+    });
+
+    // Remove all from collection
+    it('Flush dbCounter for collection before continue', () => {
+        promise = promise
+            .then(() => mongoConnector.delete(collectionName, {multi: true}))
+            .then(() => mongoConnector.delete('dbCounters', {match: {_id: collectionName}}))
+        ;
+        return promise;
+    });
+
+    it('Test autoIncrement document _id', () => {
+        const listToInsert = [
+            {expectedId: 1},
+            {expectedId: 2},
+            {expectedId: 3},
+        ];
+
+        const itemToInsert = {expectedId: 4};
+        const itemToInsert2 = {expectedId: 5};
+
+        const listToInsert2 = [
+            {expectedId: 6},
+            {expectedId: 7},
+            {expectedId: 8},
+        ];
+
+        promise = promise
+            .then(() => mongoConnector.insert(collectionName, listToInsert, {autoIncrementId: true}))
+            .then(() => mongoConnector.insert(collectionName, itemToInsert, {autoIncrementId: true}))
+            .then(() => mongoConnector.insert(collectionName, itemToInsert2, {autoIncrementId: true}))
+            .then(() => mongoConnector.insert(collectionName, listToInsert2, {autoIncrementId: true}))
+            .then(() => mongoConnector.get(collectionName, {}))
+            .then(itemList => {
+                for (let item of itemList) {
+                    expect(item._id).to.be(item.expectedId);
+                }
+            })
             .catch(err => expect(err).to.be(null))
         ;
         return promise;
