@@ -17,8 +17,8 @@ const testDoc = {
 
 let promise = Promise.resolve();
 
-describe('mongodbConnector connection and routines', () => {
-    it('Test mongodb connection', () => {
+describe('Test mongodbConnector', () => {
+    it('Test connection', () => {
         promise = promise
             .then(() => mongoConnector.connect())
             .then(db => {
@@ -46,8 +46,11 @@ describe('mongodbConnector connection and routines', () => {
     });
 
     it('Test insert document', () => {
-        promise = promise.then(() => mongoConnector.insert(collectionName, testDoc));
-        return promise.catch(err => expect(err).to.be(null));
+        promise = promise
+            .then(() => mongoConnector.insert(collectionName, testDoc))
+            .catch(err => expect(err).to.be(null))
+        ;
+        return promise;
     });
 
     it('Test update document', () => {
@@ -57,8 +60,11 @@ describe('mongodbConnector connection and routines', () => {
         Object.assign(testDoc, changeItem);
 
         const match = mongoConnector.generateMatchObject({_id: testDoc._id});
-        promise = promise.then(() => mongoConnector.update(collectionName, {match, set: changeItem}));
-        return promise.catch(err => expect(err).to.be(null));
+        promise = promise
+            .then(() => mongoConnector.update(collectionName, {match, set: changeItem}))
+            .catch(err => expect(err).to.be(null))
+        ;
+        return promise;
     });
 
     it('Test get document', () => {
@@ -69,8 +75,9 @@ describe('mongodbConnector connection and routines', () => {
                 const docFromDB = itemList.shift();
                 expect(docFromDB).to.eql(testDoc);
             })
+            .catch(err => expect(err).to.be(null))
         ;
-        return promise.catch(err => expect(err).to.be(null));
+        return promise;
     });
 
     it('Test delete document', () => {
@@ -79,11 +86,12 @@ describe('mongodbConnector connection and routines', () => {
             .then(() => mongoConnector.delete(collectionName, {match}))
             .then(() => mongoConnector.get(collectionName, {match}))
             .then(itemList => expect(itemList).to.have.length(0))
+            .catch(err => expect(err).to.be(null))
         ;
-        return promise.catch(err => expect(err).to.be(null));
+        return promise;
     });
 
-    it('Close connection and exit process', () => {
+    it('Close connection', () => {
         return promise
             .then(() => mongoConnector.closeConnection(true))
         ;

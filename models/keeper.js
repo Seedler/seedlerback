@@ -1,12 +1,17 @@
 'use strict';
 
+const validate = require('validate.js');
 const sha1 = require('sha1');
 const cryptoRandomString = require('crypto-random-string');
+const config = require('seedler:config');
+const {
+    db = {},
+} = config;
 
 module.exports = class Keeper {
     constructor(params = {}) {
         const {
-            username = '',
+            login = '',
             name = '',
             email = '',
             password = '',
@@ -18,7 +23,7 @@ module.exports = class Keeper {
         const createdAt = new Date();
 
         return Object.assign(this, {
-            username,
+            login,
             name,
             email,
 
@@ -29,4 +34,6 @@ module.exports = class Keeper {
             createdAt,
         });
     }
+
+
 };
