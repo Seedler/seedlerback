@@ -1,6 +1,6 @@
 'use strict';
 
-const config = require('seedler:config');
+const config = require('../config');
 const logger = config.getLogger('mongoConnector');
 const isEqual = require('is-equal');
 const MongoClient = require('mongodb').MongoClient;
@@ -111,7 +111,6 @@ module.exports = {
 
                 dbObject = db;
 
-                client.on('connect', () => logger.info(`MongoDB connected successfully to ${url}`));
                 client.on('reconnect', () => logger.info(`MongoDB reconnected to ${url}`));
 
                 return db;

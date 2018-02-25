@@ -1,6 +1,8 @@
 'use strict';
 
 const config = require('../config');
+config.linkGlobalPaths();
+
 const mongoConnector = require('seedler:libs/mongoConnector');
 // const logger = config.getLogger('MongoConnector');
 const expect = require('expect.js');
@@ -24,7 +26,6 @@ describe('mongodbConnector connection and routines', () => {
                 expect(db).to.be.an('object');
             })
         ;
-
         return promise;
     });
 
@@ -35,14 +36,12 @@ describe('mongodbConnector connection and routines', () => {
                 {[testField]: 1},
             ],
         }));
-
         return promise;
     });
 
     // Remove all from collection
     it('Flush collection', () => {
         promise = promise.then(() => mongoConnector.delete(collectionName, {multi: true}));
-
         return promise;
     });
 

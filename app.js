@@ -1,6 +1,8 @@
 'use strict';
 
 const config = require('./config');
+config.linkGlobalPaths();
+
 const launch = require('seedler:libs/launch');
 const logger = config.getLogger('WebServer');
 
