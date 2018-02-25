@@ -71,13 +71,17 @@ module.exports = {
         }
 
         const {
-            host,
-            port,
-            database,
+            mongodb = {},
             packageDescription,
         } = config;
 
-        const url = `mongodb://${host}:${port}/${database}`;
+        const {
+            host,
+            port,
+            database,
+        } = mongodb;
+
+        const url = `mongodb://${host}:${port}`;
         const options = {
             appname: packageDescription,
             autoReconnect: true,
@@ -86,12 +90,19 @@ module.exports = {
             ignoreUndefined: true,
         };
 
-        dbObject = MongoClient.connect(url, options);
+        logger.info(`Try to connect to MongoDB using url: ${url}`);
+        return MongoClient.connect(url, options)
+            .then(client => {
+                const db = client.db(database);
 
-        dbObject.on('connect', () => logger.info(`MongoDB connected successfully to ${url}`));
-        dbObject.on('reconnect', () => logger.info(`MongoDB reconnected to ${url}`));
+                dbObject = db;
 
-        return dbObject;
+                client.on('connect', () => logger.info(`MongoDB connected successfully to ${url}`));
+                client.on('reconnect', () => logger.info(`MongoDB reconnected to ${url}`));
+
+                return db;
+            })
+        ;
     },
 
     checkCollections(collectionList = []) {
@@ -131,7 +142,7 @@ module.exports = {
             })
             // Remove deprecated indexes first
             .then(currentIndexList => {
-                const indexListToDelete = currentIndexList.filter(currentIndexItem => {
+                const currentIndexListToDelete = currentIndexList.filter(currentIndexItem => {
                     // Skip checking _id index
                     if (currentIndexItem.name === '_id_') {
                         return false;
@@ -149,11 +160,11 @@ module.exports = {
                 });
 
                 let promise = Promise.resolve();
-                for (let indexItem of indexListToDelete) {
+                for (let currentIndexItem of currentIndexListToDelete) {
                     promise = promise
-                        .then(() => collection.dropIndex(indexItem.name))
-                        .then(() => logger.info(`Drop index for ${collectionName} called ${indexItem.name}`))
-                        .catch(err => logger.info(`Failed to drop index for ${collectionName} called ${indexItem.name}:`, err))
+                        .then(() => collection.dropIndex(currentIndexItem.name))
+                        .then(() => logger.info(`Drop index for ${collectionName} called ${currentIndexItem.name}`))
+                        .catch(err => logger.info(`Failed to drop index for ${collectionName} called ${currentIndexItem.name}:`, err))
                     ;
                 }
 
@@ -176,8 +187,8 @@ module.exports = {
 
                     promise = promise
                         .then(() => collection.createIndex(indexKeys, options))
-                        .then(() => logger.info(`Create index on ${collectionName}: ${indexItem.name}`))
-                        .catch(err => logger.info(`Failed to create index on ${collectionName}: ${indexItem.name}:`, err))
+                        .then(() => logger.info(`Create index on ${collectionName}: `, indexKeys))
+                        .catch(err => logger.info(`Failed to create index on ${collectionName}: `, indexKeys, err))
                     ;
                 }
 
@@ -240,7 +251,7 @@ module.exports = {
             cursor = cursor.limit(limit);
         }
 
-        return getDataFromCursor(cursor);
+        return cursor.toArray();
     },
 
     update(collectionName, params = {}, options = {}) {
