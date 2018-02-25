@@ -21,7 +21,6 @@ function getNextId(collectionName, count = 0) {
             const value = result.value || {};
             // Returns actual lastId (before the update)
             const lastId = value.lastId || 0;
-
             // Next id starts with +1
             return lastId + 1;
         })
