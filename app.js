@@ -18,7 +18,7 @@ projectKeeper.launch()
 
         logger.info(`App now listen on port ${port}...`);
         const {
-            // Was assigned in setup/project
+            // Was assigned in setup/express
             app = {},
         } = projectKeeper;
 
