@@ -79,6 +79,10 @@ const projectKeeper = {
                 });
             }
 
+            // Self delete after launch run
+            delete this.stage;
+            delete this.run;
+
             return promise;
         };
 
