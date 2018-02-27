@@ -196,6 +196,8 @@ function routeHandler(req = {}, res = {}) {
 function createResponseObject(resultObject = {}) {
     // Error response object is specific and should be handled separately
     if (resultObject instanceof Error) {
+        logger.error(resultObject);
+
         const errorCode = resultObject[sResponseCode] || STATUS_CODES.serverError;
         const apiCode = resultObject[sApiResponseCode] || API_CODES.unknown;
 

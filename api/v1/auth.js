@@ -8,7 +8,7 @@ const passport = require('passport');
 const {
     sRequestObject,
     sResponseObject,
-    PERMISSION_LEVELS,
+    ACCESS_LEVELS,
     API_CODES,
     STATUS_CODES,
 } = controller;
@@ -63,5 +63,5 @@ function logout(params = {}) {
 
 module.exports = {
     login: controller.wrapMethod(login),
-    logout: controller.wrapMethod(logout, {accessLevel: PERMISSION_LEVELS.keeper}),
+    logout: controller.wrapMethod(logout, {accessLevel: ACCESS_LEVELS.keeper}),
 };
