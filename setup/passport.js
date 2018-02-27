@@ -6,6 +6,7 @@ const logger = projectKeeper.getLogger('Passport');
 // Debug test keeper
 const user = {
     _id: 1,
+    name: 'Тест Тестов',
     login: 'test',
     password: '12345',
     accessLevel: 1,

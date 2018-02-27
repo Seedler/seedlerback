@@ -23,7 +23,6 @@ function passportLoginHandler(req, res) {
             if (err) {
                 reject(err);
             }
-
             if (!user) {
                 controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.userNotFound, 'User not found');
             }
@@ -44,10 +43,12 @@ function login(params = {}) {
         [sRequestObject]: req = {},
         [sResponseObject]: res = {},
     } = params;
-
     // Deny duplicate login
-    if (req.keeper) {
-        controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.alreadyAuthorized, 'You have to logout before login');
+    const {
+        user,
+    } = req;
+    if (user) {
+        controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.alreadyAuthorized, `You have to logout ${user.login} before login, ${user.name}`);
     }
 
     return passportLoginHandler(req, res);

@@ -131,7 +131,7 @@ function getMethodData(req = {}) {
 
 function setControlHeaders(res = {}, params = {}) {
     // Information about package version
-    res.setHeader('X-VERSION', packageDescription);
+    res.setHeader('X-Version', packageDescription);
     // Only usual requests permitted
     res.setHeader('X-Content-Type-Options', 'nosniff');
     // No frames
