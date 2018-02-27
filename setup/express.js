@@ -1,17 +1,16 @@
 'use strict';
 
-const config = require('seedler:config');
-const logger = config.getLogger('Express middleware initialization');
-
 module.exports = function() {
+    const projectKeeper = require('../libs/projectKeeper');
+    const logger = projectKeeper.getLogger('Express middleware initialization');
     logger.info(`Try to add middleware modules to express app`);
-
-    const {
-        app = {},
-    } = config;
 
     const cors = require('cors');
     const bodyParser = require('body-parser');
+    // Add framework
+    const express = require('express');
+    // Special middleware to add setup-stages
+    const app = express();
 
     app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
         extended: true,
@@ -37,4 +36,9 @@ module.exports = function() {
             credentials: true,
         });
     }));
+
+    // All returned in objects will be assigned to projectKeeper object
+    return {
+        app,
+    };
 };

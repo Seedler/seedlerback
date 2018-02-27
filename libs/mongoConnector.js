@@ -1,7 +1,8 @@
 'use strict';
 
+const projectKeeper = require('../libs/projectKeeper');
 const config = require('../config');
-const logger = config.getLogger('mongoConnector');
+const logger = projectKeeper.getLogger('mongoConnector');
 const isEqual = require('is-equal');
 const MongoClient = require('mongodb').MongoClient;
 

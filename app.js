@@ -1,29 +1,27 @@
 'use strict';
 
-const config = require('./config');
-config.linkGlobalPaths();
+const projectKeeper = require('./libs/projectKeeper');
+const logger = projectKeeper.getLogger('WebServer');
 
-const launch = require('seedler:libs/launch');
-const logger = config.getLogger('WebServer');
-
-// Express Router and middleware
-const express = require('express');
-// Special middleware to add setup-stages
-const app = config.app = launch(express());
-
-app
+projectKeeper.launch()
     .stage('./setup/mongodb')
     .stage('./setup/redis')
     .stage('./setup/express')
     .stage('./setup/passport')
     .stage('./setup/router')
-    .run
+    .run()
     .then(() => {
+        const config = require('./config');
         const {
             port = 8080,
         } = config.server;
 
         logger.info(`App now listen on port ${port}...`);
+        const {
+            // Was assigned in setup/project
+            app = {},
+        } = projectKeeper;
+
         app.listen(port);
 
         logger.info('Seedler instance started!');

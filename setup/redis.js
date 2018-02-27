@@ -1,18 +1,12 @@
 'use strict';
 
-const config = require('seedler:config');
-const redisConnector = require('seedler:libs/redisConnector');
-const logger = config.getLogger('Redis launch');
-
-module.exports = function(done) {
+module.exports = function() {
+    const projectKeeper = require('../libs/projectKeeper');
+    const logger = projectKeeper.getLogger('Redis launch');
     logger.info('Try to init redis connector');
 
-    redisConnector.createClient()
-        .then(redis => config.redis = redis)
-        .then(() => {
-            logger.info('Redis connector launched!');
-            done();
-        })
-        .catch(done)
+    const redisConnector = require('../libs/redisConnector');
+    return redisConnector.createClient()
+        .then(redis => ({redis}))
     ;
 };

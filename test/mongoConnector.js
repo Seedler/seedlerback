@@ -1,9 +1,6 @@
 'use strict';
 
-const config = require('../config');
-config.linkGlobalPaths();
-
-const mongoConnector = require('seedler:libs/mongoConnector');
+const mongoConnector = require('../libs/mongoConnector');
 // const logger = config.getLogger('MongoConnector');
 const expect = require('expect.js');
 

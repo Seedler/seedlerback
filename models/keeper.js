@@ -3,11 +3,14 @@
 const validate = require('validate.js');
 const sha1 = require('sha1');
 const cryptoRandomString = require('crypto-random-string');
-const config = require('seedler:config');
-const controller = require('seedler:controller');
+
+const controller = require('../controller');
+const projectKeeper = require('../libs/projectKeeper');
+
 const {
     db = {},
-} = config;
+} = projectKeeper;
+
 const {
     API_CODES = {},
     STATUS_CODES = {},
@@ -97,13 +100,13 @@ module.exports = class Keeper {
             email = '',
             password = '',
             passwordSalt = cryptoRandomString(5 + 5 * Math.random()),
+            updatedAt = new Date(),
+            createdAt = new Date(),
         } = params;
 
         const {
             passwordHash = sha1(password + passwordSalt),
         } = params;
-
-        const createdAt = new Date();
 
         return Object.assign(this, {
             _id,
@@ -114,7 +117,7 @@ module.exports = class Keeper {
             passwordSalt,
             passwordHash,
 
-            updatedAt: createdAt,
+            updatedAt,
             createdAt,
         });
     }
@@ -158,6 +161,7 @@ module.exports = class Keeper {
         const preparedKeeper = new Keeper(this);
         // Mongo dislikes $set on _id key
         delete preparedKeeper._id;
+        preparedKeeper.updatedAt = new Date();
 
         return db.update(collectionName, {_id}, {set: preparedKeeper}).then(() => this);
     }

@@ -4,10 +4,9 @@
   "description": "Plant the seeds of information and put everything together in different views",
   "version": "0.0.1",
   "private": false,
-  "main": "./src/main-process/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Asondo/seedlerback.git"
+    "url": "https://github.com/seedler/seedlerback.git"
   },
   "dependencies": {
     "body-parser": "latest",
@@ -22,7 +21,7 @@
     "is-equal": "^1.5.5",
     "log4js": "^1.1.1",
     "mocha": "^5.0.1",
-    "mongodb": "^3.0.2",
+    "mongodb": "^3.0.3",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "redis": "^2.8.0",

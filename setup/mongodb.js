@@ -1,22 +1,20 @@
 'use strict';
 
-const config = require('seedler:config');
-const logger = config.getLogger('MongoConnector');
-const mongoConnector = require('seedler:libs/mongoConnector');
-
 module.exports = function() {
+    const projectKeeper = require('../libs/projectKeeper');
+    const logger = projectKeeper.getLogger('MongoConnector');
     logger.info(`Try to initialize mongoConnector`);
 
+    const mongoConnector = require('../libs/mongoConnector');
     return mongoConnector
         .connect()
-        .then(db => {
-            config.mongoObject = db;
-            config.db = mongoConnector;
-
-            logger.info(`mongoConnector initialized, mongoObject added to config closure`);
-
-            return mongoConnector.checkCollections();
+        .then(client => {
+            return mongoConnector.checkCollections()
+                .then(() => ({
+                    mongoClient: client,
+                    db: mongoConnector,
+                }))
+            ;
         })
-        .then(() => logger.info(`Collections and indexes checked`))
     ;
 };

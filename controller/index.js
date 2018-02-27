@@ -1,7 +1,8 @@
 'use strict';
 
-const config = require('seedler:config');
-const logger = config.getLogger('Controller');
+const config = require('../config');
+const projectKeeper = require('../libs/projectKeeper');
+const logger = projectKeeper.getLogger('Controller');
 
 // symbols helpers (pass response args)
 const sMethodName = Symbol('sMethodName');
@@ -99,7 +100,7 @@ function getMethodData(req = {}) {
     } = params;
 
     // Require js api file from ./api dir
-    const api = require(`seedler:api/${version}/${apiName}`);
+    const api = require(`../api/${version}/${apiName}`);
     if (typeof api !== 'object') {
         throwResponseError(STATUS_CODES.notFound, API_CODES.apiNotFound, `Undefined api: url: ${url}`);
     }

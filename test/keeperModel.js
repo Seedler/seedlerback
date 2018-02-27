@@ -1,9 +1,6 @@
 'use strict';
 
-const config = require('../config');
-config.linkGlobalPaths();
-
-const Keeper = require('seedler:models/keeper');
+const Keeper = require('../models/keeper');
 // const logger = config.getLogger('MongoConnector');
 const expect = require('expect.js');
 

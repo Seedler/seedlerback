@@ -1,8 +1,8 @@
 'use strict';
 
-const config = require('seedler:config');
-const logger = config.getLogger('api/v1/test');
-const controller = require('seedler:controller');
+const projectKeeper = require('../../libs/projectKeeper');
+const logger = projectKeeper.getLogger('api/v1/test');
+const controller = require('../../controller');
 
 const wrapMethod = controller.wrapMethod || (func => func);
 
@@ -14,5 +14,5 @@ module.exports = {
     }),
     testApi(params = {}) {
         return Object.assign({result: 'started'}, params);
-    }
+    },
 };

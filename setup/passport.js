@@ -1,7 +1,7 @@
 'use strict';
 
-const config = require('seedler:config');
-const logger = config.getLogger('Passport');
+const projectKeeper = require('../libs/projectKeeper');
+const logger = projectKeeper.getLogger('Passport');
 
 // Debug test keeper
 const user = {
@@ -32,7 +32,7 @@ module.exports = function() {
         // Should be added at prev setup stage
         redis = {},
         app = {},
-    } = config;
+    } = projectKeeper;
 
     // Set special middleware for auth
     app.use(session({

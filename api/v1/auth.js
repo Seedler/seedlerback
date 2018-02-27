@@ -1,8 +1,8 @@
 'use strict';
 
-const config = require('seedler:config');
-const logger = config.getLogger('api/v1/auth');
-const controller = require('seedler:controller');
+const projectKeeper = require('../../libs/projectKeeper');
+const logger = projectKeeper.getLogger('api/v1/auth');
+const controller = require('../../controller');
 const passport = require('passport');
 
 const {

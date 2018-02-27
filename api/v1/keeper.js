@@ -1,15 +1,15 @@
 'use strict';
 
-const config = require('seedler:config');
-const logger = config.getLogger('api/v1/keeper');
-const controller = require('seedler:controller');
+const projectKeeper = require('../../libs/projectKeeper');
+const logger = projectKeeper.getLogger('api/v1/keeper');
+const controller = require('../../controller');
 const {
     ACCESS_LEVELS = {},
 } = controller;
 
 const {
-    mongodb: db = {},
-} = config;
+    db = {},
+} = projectKeeper;
 
 const wrapMethod = controller.wrapMethod || (func => func);
 

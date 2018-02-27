@@ -1,9 +1,6 @@
 'use strict';
 
-const config = require('../config');
-config.linkGlobalPaths();
-
-const redisConnector = require('seedler:libs/redisConnector');
+const redisConnector = require('../libs/redisConnector');
 // const logger = config.getLogger('MongoConnector');
 const expect = require('expect.js');
 
