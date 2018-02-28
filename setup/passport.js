@@ -4,7 +4,7 @@ const projectKeeper = require('../libs/projectKeeper');
 const logger = projectKeeper.getLogger('Passport');
 
 // Debug test keeper
-const user = {
+const keeper = {
     _id: 1,
     name: 'Тест Тестов',
     login: 'test',
@@ -13,13 +13,13 @@ const user = {
 };
 
 function localLoginHandler(login, password, done) {
-    logger.info(`Some shit happens! Passport want to auth user:`, login, password);
+    logger.info(`Passport want to auth user:`, login, password);
 
-    if (user.password === password) {
-        return done(null, user, {message: 'woo-hoo!'});
+    if (keeper.password === password) {
+        return done(null, keeper);
     }
 
-    return done(null, false, {message: 'nope!'});
+    return done(null, false);
 }
 
 module.exports = function() {
@@ -67,6 +67,6 @@ module.exports = function() {
     /** @namespace passport.deserializeUser */
     passport.deserializeUser((id, done) => {
         logger.debug(`Auth middleware want to get user by id ${id}`);
-        done(null, user);
+        done(null, keeper);
     });
 };

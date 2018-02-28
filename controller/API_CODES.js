@@ -19,6 +19,7 @@ module.exports = Object.freeze({
 
     // Invalid input error statuses starts with 500
     INVALID_INPUT: 300,
+    INVALID_AUTH_INPUT: 301, // Invalid login or pass
 
     // If something not found error would start from 400
     NOT_FOUND: 400,

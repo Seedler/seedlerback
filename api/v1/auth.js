@@ -24,7 +24,7 @@ function passportLoginHandler(req, res) {
                 reject(err);
             }
             if (!user) {
-                controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.KEEPER_NOT_FOUND, 'User not found');
+                controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_AUTH_INPUT, 'Invalid login or password');
             }
 
             req.logIn(user, err => {
