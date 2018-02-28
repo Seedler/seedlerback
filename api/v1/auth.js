@@ -24,7 +24,7 @@ function passportLoginHandler(req, res) {
                 reject(err);
             }
             if (!user) {
-                controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.userNotFound, 'User not found');
+                controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.KEEPER_NOT_FOUND, 'User not found');
             }
 
             req.logIn(user, err => {
@@ -48,7 +48,7 @@ function login(params = {}) {
         user,
     } = req;
     if (user) {
-        controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.alreadyAuthorized, `You have to logout ${user.login} before login, ${user.name}`);
+        controller.throwResponseError(STATUS_CODES.NOT_ALLOWED, API_CODES.ALREADY_AUTHORIZED, `You have to logout ${user.login} before login, ${user.name}`);
     }
 
     return passportLoginHandler(req, res);
@@ -64,5 +64,5 @@ function logout(params = {}) {
 
 module.exports = {
     login: controller.wrapMethod(login),
-    logout: controller.wrapMethod(logout, {accessLevel: ACCESS_LEVELS.keeper}),
+    logout: controller.wrapMethod(logout, {accessLevel: ACCESS_LEVELS.KEEPER}),
 };

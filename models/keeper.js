@@ -90,7 +90,7 @@ module.exports = class Keeper {
     constructor(params = {}) {
         const validation = validate(params, keeperModel);
         if (validation) {
-            controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.invalidInput, JSON.stringify(validation));
+            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, JSON.stringify(validation));
         }
 
         const {
@@ -129,7 +129,7 @@ module.exports = class Keeper {
             .then(resultList => {
                 const [keeper] = resultList;
                 if (!keeper) {
-                    controller.throwResponseError(STATUS_CODES.notFound, API_CODES.userNotFound, `getKeeper: Keeper not found by params: ${JSON.stringify(params)}`);
+                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.KEEPER_NOT_FOUND, `getKeeper: Keeper not found by params: ${JSON.stringify(params)}`);
                 }
 
                 return new Keeper(keeper);
@@ -154,7 +154,7 @@ module.exports = class Keeper {
             _id,
         } = this;
         if (!_id) {
-            controller.throwResponseError(STATUS_CODES.badRequest, API_CODES.invalidInput, `updateKeeper: Passed keeper item should be set by setKeeper first (db id is not exists)`);
+            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, `updateKeeper: Passed keeper item should be set by setKeeper first (db id is not exists)`);
         }
 
         // Create new instance to update into db

@@ -20,6 +20,6 @@ function getUsers(params = {}) {
 }
 
 module.exports = {
-    accessLevel: ACCESS_LEVELS.support,
+    accessLevel: ACCESS_LEVELS.SUPPORT,
     readMany: wrapMethod(getUsers)
 };

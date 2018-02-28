@@ -18,59 +18,26 @@ const sResponseObject = Symbol('sResponseObject');
 const sAuthorizedUser = Symbol('sAuthorizedUser');
 const sSecure = Symbol('sSecure');
 
-// TODO: Put in a separate files
-const STATUS_CODES = Object.freeze({
-    success: 200,
-
-    badRequest: 400,
-    unauthorized: 401,
-    notFound: 404,
-    notAllowed: 405,
-    teapot: 418,
-    locked: 423,
-
-    serverError: 500,
-});
-const API_CODES = Object.freeze({
-    success: 200,
-    unknown: 400,
-    accessDenied: 401,
-    userNotFound: 402,
-    unauthorized: 403,
-    apiNotFound: 404,
-    apiMethodNotFound: 405,
-    alreadyAuthorized: 406,
-    invalidInput: 407,
-});
-const ACCESS_LEVELS = Object.freeze({
-    all: 0, // Public permissions
-    keeper: 1, // Only for registered users and upper
-    support: 2, // Only for support managers (moderators) and upper
-    root: 3, // Administrators only
-    system: 4, // System private method
-
-    // Tenure privileges
-    poacher: 0, // let it be
-    watcher: 1, // Read only
-    surveyor: 2, // Read only with edit suggestions
-    tenant: 3, // Reader with editing permission
-    landowner: 4, // Full privileges for forest editing
-});
+const STATUS_CODES = require('./STATUS_CODES');
+const API_CODES = require('./API_CODES');
+const ACCESS_LEVELS = require('./ACCESS_LEVELS');
 
 const {
     packageDescription,
 } = config;
 
-function throwResponseError(code = STATUS_CODES.teapot, apiCode = API_CODES.unknown, message = 'Unknown reason') {
+function throwResponseError(code = STATUS_CODES.TEAPOT, apiCode = API_CODES.UNKNOWN, message = 'Unknown reason') {
     const err = new Error(message);
-    err[sResponseCode] = code;
-    err[sApiResponseCode] = apiCode;
+    Object.assign(err, {
+        [sResponseCode]: code,
+        [sApiResponseCode]: apiCode,
+    });
     throw err;
 }
 
 function wrapMethod(method, params = {}) {
     const {
-        accessLevel = ACCESS_LEVELS.all,
+        accessLevel = ACCESS_LEVELS.ALL,
     } = params;
 
     method.accessLevel = accessLevel;
@@ -102,7 +69,7 @@ function getMethodData(req = {}) {
     // Require js api file from ./api dir
     const api = require(`../api/${version}/${apiName}`);
     if (typeof api !== 'object') {
-        throwResponseError(STATUS_CODES.notFound, API_CODES.apiNotFound, `Undefined api: url: ${url}`);
+        throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.API_NOT_FOUND, `Undefined api: url: ${url}`);
     }
 
     let methodName = action;
@@ -112,7 +79,7 @@ function getMethodData(req = {}) {
 
     const requestHandler = api[methodName];
     if (typeof requestHandler !== 'function') {
-        throwResponseError(STATUS_CODES.notFound, API_CODES.apiMethodNotFound, `Undefined api method: ${methodName} from url: ${url}`);
+        throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.METHOD_NOT_FOUND, `Undefined api method: ${methodName} from url: ${url}`);
     }
 
     const apiAccessLevel = api.accessLevel;
@@ -159,8 +126,8 @@ function routeHandler(req = {}, res = {}) {
                 requestHandler,
                 methodName,
                 apiVersionName,
-                accessLevel = ACCESS_LEVELS.all,
-                apiAccessLevel = ACCESS_LEVELS.all,
+                accessLevel = ACCESS_LEVELS.ALL,
+                apiAccessLevel = ACCESS_LEVELS.ALL,
             } = methodData;
 
             logger.debug(`WebServer: Get params for route ${url} to use in method ${methodName}, user ${user}`);
@@ -168,16 +135,17 @@ function routeHandler(req = {}, res = {}) {
             // Check permissions (api permissions has priority)
             checkPermissions(user, Math.max(apiAccessLevel, accessLevel));
 
-            body[sRequestObject] = req;
-            body[sResponseObject] = res;
-
-            body[sRequestUrl] = url;
-            body[sRequestHeaders] = headers;
-            body[sRequestMethod] = method;
-            body[sRequestParams] = params;
-            body[sMethodName] = methodName;
-            body[sMethodVersion] = apiVersionName;
-            body[sAuthorizedUser] = user;
+            Object.assign(body, {
+                [sRequestObject]: req,
+                [sResponseObject]: res,
+                [sRequestUrl]: url,
+                [sRequestHeaders]: headers,
+                [sRequestMethod]: method,
+                [sRequestParams]: params,
+                [sMethodName]: methodName,
+                [sMethodVersion]: apiVersionName,
+                [sAuthorizedUser]: user,
+            });
 
             // Include headers into response object
             setControlHeaders(res, req.body);
@@ -198,11 +166,10 @@ function createResponseObject(resultObject = {}) {
     if (resultObject instanceof Error) {
         logger.error(resultObject);
 
-        const errorCode = resultObject[sResponseCode] || STATUS_CODES.serverError;
-        const apiCode = resultObject[sApiResponseCode] || API_CODES.unknown;
+        const errorCode = resultObject[sResponseCode] || STATUS_CODES.SERVER_ERROR;
+        const apiCode = resultObject[sApiResponseCode] || API_CODES.UNKNOWN;
 
         return {
-            type: 'error',
             code: apiCode,
             body: resultObject.toString(),
             [sResponseCode]: errorCode,
@@ -210,9 +177,8 @@ function createResponseObject(resultObject = {}) {
     }
 
     // Standard response object
-    const apiCode = resultObject[sApiResponseCode] || API_CODES.success;
+    const apiCode = resultObject[sApiResponseCode] || API_CODES.SUCCESS;
     const responseObject = {
-        type: 'success',
         code: apiCode,
         body: resultObject,
     };
@@ -248,7 +214,7 @@ function accessDenied(user, methodAccessLevel = 0) {
     let accessDenied = false;
 
     if (!user) {
-        if (methodAccessLevel > ACCESS_LEVELS.all) {
+        if (methodAccessLevel > ACCESS_LEVELS.ALL) {
             accessDenied = true;
         }
     }
@@ -263,10 +229,10 @@ function checkPermissions(user, methodPermissions = 0) {
     const isAccessDenied = accessDenied(user, methodPermissions);
     if (isAccessDenied) {
         if (user) {
-            throwResponseError(STATUS_CODES.notAllowed, API_CODES.accessDenied, 'You have no power here');
+            throwResponseError(STATUS_CODES.NOT_ALLOWED, API_CODES.ACCESS_DENIED, 'You have no power here');
         }
         else {
-            throwResponseError(STATUS_CODES.unauthorized, API_CODES.unauthorized, 'You have no power. Authorize, please');
+            throwResponseError(STATUS_CODES.UNAUTHORIZED, API_CODES.UNAUTHORIZED, 'You have no power. Authorize, please');
         }
     }
 }
