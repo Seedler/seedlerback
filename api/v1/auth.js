@@ -86,7 +86,7 @@ function login(params = {}) {
         user,
     } = req;
     if (user) {
-        controller.throwResponseError(STATUS_CODES.NOT_ALLOWED, API_CODES.ALREADY_AUTHORIZED, `You have to logout ${user.login} before login, ${user.name}`);
+        controller.throwResponseError(STATUS_CODES.FORBIDDEN, API_CODES.ALREADY_AUTHORIZED, `You have to logout ${user.login} before login, ${user.name}`);
     }
 
     return passportLoginHandler(req, res);
