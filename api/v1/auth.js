@@ -47,7 +47,7 @@ function signup(params = {}) {
             return keeper.insertIntoDB();
         })
         .then(keeperItem => {
-            logger.debug(`Signup: create new keeper with _id`, keeperItem._id);
+            logger.debug(`Signup: create new keeper with id: ${keeperItem.id}`);
             return keeperItem;
         })
     ;
@@ -70,7 +70,7 @@ function passportLoginHandler(req, res) {
                     reject(err);
                 }
 
-                resolve({_id: user._id});
+                resolve({id: user.id});
             });
         })(req, res);
     });

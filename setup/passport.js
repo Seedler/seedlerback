@@ -58,13 +58,13 @@ module.exports = function() {
     // Serializer
     /** @namespace passport.serializeUser */
     passport.serializeUser((user, done) => {
-        logger.debug(`Auth middleware want to set user with its id ${user._id}`);
-        done(null, user._id);
+        logger.debug(`Auth middleware want to set user with its id ${user.id}`);
+        done(null, user.id);
     });
     /** @namespace passport.deserializeUser */
     passport.deserializeUser((id, done) => {
         logger.debug(`Auth middleware want to get user by id ${id}`);
-        Keeper.getFromDB({_id: id})
+        Keeper.getFromDB({id})
             .then(keeper => done(null, keeper))
             .catch(err => done(err))
         ;

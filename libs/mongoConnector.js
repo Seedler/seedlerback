@@ -40,7 +40,7 @@ function getCollection(collectionName = '', params = {}) {
     });
 }
 
-const generateMatchObject = function(queryParams = {}, keyList = [], options = {}) {
+function generateMatchObject(queryParams = {}, keyList = [], options = {}) {
     let {
         match = {},
         negativeKeys = [],
@@ -112,7 +112,17 @@ const generateMatchObject = function(queryParams = {}, keyList = [], options = {
     }
 
     return globalMatch;
-};
+}
+
+function normalizeIndexItem(indexItem = {}) {
+    // Index item could be object with index keys or array with keys and options
+    // Convert to array
+    if (!Array.isArray(indexItem)) {
+        indexItem = [indexItem];
+    }
+
+    return indexItem;
+}
 
 module.exports = {
     connect() {
@@ -218,13 +228,17 @@ module.exports = {
                     ;
                 }
 
+                // Every collection will have "id" index
+                const normalizedIndexList = indexes.map(normalizeIndexItem);
+                const idIndexKey = {id: 1};
+                const existedIdIndexKey = currentIndexList.find(currentIndexItem => isEqual(currentIndexItem.key, idIndexKey));
+                if (!existedIdIndexKey) {
+                    normalizedIndexList.push([idIndexKey, {unique: 1}]);
+                }
+
+
                 // Create index
-                for (let indexItem of indexes) {
-                    // Index item could be object with index keys or array with keys and options
-                    // Convert to array
-                    if (!Array.isArray(indexItem)) {
-                        indexItem = [indexItem];
-                    }
+                for (let indexItem of normalizedIndexList) {
                     const [
                         indexKeys = {},
                         options = {},
@@ -270,7 +284,8 @@ module.exports = {
                 .then(nextId => {
                     for (let i = 0; i < idCountToReserve; i++) {
                         const doc = docs[i];
-                        doc._id = nextId++;
+                        doc._id = nextId;
+                        doc.id = nextId++;
                     }
                 })
             ;

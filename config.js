@@ -21,19 +21,22 @@ module.exports = {
             {
                 name: 'keepers',
                 indexes: [
-                    {login: 1},
-                    {email: 1},
+                    [{id: 1}, {unique: true}],
+                    [{login: 1}, {unique: true}],
+                    [{email: 1}, {unique: true}],
                 ],
             },
             {
                 name: 'forests',
+                indexes: [
+                ],
             },
             {
                 name: 'tenures',
                 indexes: [
                     {keeperId: 1},
                     {forestId: 1},
-                    {keeperId: 1, forestId: 1},
+                    [{keeperId: 1, forestId: 1}, {unique: true}],
                 ],
             },
         ],

@@ -99,7 +99,7 @@ class Keeper {
         }
 
         const {
-            _id,
+            id,
             login = '',
             name = '',
             email = '',
@@ -114,7 +114,7 @@ class Keeper {
         } = params;
 
         return Object.assign(this, {
-            _id,
+            id,
             login,
             name,
             email,
@@ -133,7 +133,7 @@ class Keeper {
 
     static getFromDB(params = {}) {
         // Use first key that is not undefined
-        const match = db.generateMatchObject(params, [], {orKeys: ['_id', 'login', 'email']});
+        const match = db.generateMatchObject(params, [], {orKeys: ['id', 'login', 'email']});
         return db.get(collectionName, {match})
             .then(resultList => {
                 const [keeper] = resultList;
@@ -158,13 +158,13 @@ class Keeper {
 
     insertIntoDB() {
         const {
-            _id,
+            id,
         } = this;
-        if (_id) {
+        if (id) {
             return this.update();
         }
 
-        // autoincrement _id will be add to this by object-link
+        // autoincrement id will be add to this by object-link
         return db.insert(collectionName, this, {autoIncrementId: true, returnNewDocuments: false})
             .then(() => this)
         ;
@@ -172,19 +172,17 @@ class Keeper {
 
     update() {
         const {
-            _id,
+            id,
         } = this;
-        if (!_id) {
+        if (!id) {
             controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, `updateKeeper: Passed keeper item should be set by setKeeper first (db id is not exists)`);
         }
 
         // Create new instance to update into db
         const preparedKeeper = new Keeper(this);
-        // Mongo dislikes $set on _id key
-        delete preparedKeeper._id;
         preparedKeeper.updatedAt = new Date();
 
-        return db.update(collectionName, {_id}, {set: preparedKeeper}).then(() => this);
+        return db.update(collectionName, {id}, {set: preparedKeeper}).then(() => this);
     }
 }
 
