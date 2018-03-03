@@ -9,6 +9,10 @@ module.exports = {
     server: {
         port: process.env.PORT || 3000,
     },
+    redis: {
+        host: process.env.REDIS_HOST || '127.0.0.1',
+        port: process.env.REDIS_PORT || 6379,
+    },
     mongodb: {
         host: process.env.MONGODB_HOST || '127.0.0.1',
         port: process.env.MONGODB_PORT || 27017,

@@ -40,18 +40,35 @@ function getCollection(collectionName = '', params = {}) {
     });
 }
 
-const generateMatchObject = function(queryParams = {}, keyList = [], match = {}, negativeKeys = []) {
-    keyList = Array.isArray(keyList) && keyList.length ? keyList : Object.keys(queryParams);
+const generateMatchObject = function(queryParams = {}, keyList = [], options = {}) {
+    const {
+        match = {},
+        negativeKeys = [],
+        orderedOrKeys = [],
+    } = options;
+
+    if (!Array.isArray(keyList) || !keyList.length) {
+        if (orderedOrKeys.length) {
+            // Use first key that is not undefined
+            keyList = orderedOrKeys;
+        }
+        else {
+            keyList = Object.keys(queryParams);
+        }
+    }
 
     for (let i = 0; i < keyList.length; i++) {
-        let queryKey = keyList[i];
-        let value = queryParams[queryKey];
+        const queryKey = keyList[i];
+        const value = queryParams[queryKey];
+        // Skip undefined values
+        const keyHasValue = value !== void 0;
+        if (!keyHasValue) {
+            continue;
+        }
+
         const isNegative = negativeKeys.includes(queryKey);
 
         if (Array.isArray(value)) {
-            // Отфильтровываем специальное значение '-' - это значит, что параметр нужно проигнорировать
-            value = value.filter(value => value !== '-');
-
             if (value.length === 1) {
                 if (isNegative) {
                     match[queryKey] = {$ne: value[0]};
@@ -70,10 +87,16 @@ const generateMatchObject = function(queryParams = {}, keyList = [], match = {},
             }
 
         }
-        else if (value !== void 0) {
-            if (isNegative) {
-                match[queryKey] = {$ne: value};
-            }
+        else if (isNegative) {
+            match[queryKey] = {$ne: value};
+        }
+        else {
+            match[queryKey] = value;
+        }
+
+        // Break on first non-undefined key
+        if (orderedOrKeys.length && orderedOrKeys.includes(queryKey)) {
+            break;
         }
     }
 

@@ -28,6 +28,11 @@ const {
 
 function throwResponseError(code = STATUS_CODES.TEAPOT, apiCode = API_CODES.UNKNOWN, message = 'Unknown reason') {
     const err = new Error(message);
+
+    if (typeof message === 'object') {
+        err.detailedObject = message;
+    }
+
     Object.assign(err, {
         [sResponseCode]: code,
         [sApiResponseCode]: apiCode,
@@ -171,7 +176,7 @@ function createResponseObject(resultObject = {}) {
 
         return {
             code: apiCode,
-            body: resultObject.toString(),
+            body: resultObject.detailedObject || resultObject.toString(),
             [sResponseCode]: errorCode,
         };
     }
@@ -252,6 +257,7 @@ module.exports = {
     sRequestHeaders,
     sResponseCode,
     sAuthorizedUser,
+    sApiResponseCode,
     sSecure,
 
     ACCESS_LEVELS,

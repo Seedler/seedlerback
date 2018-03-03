@@ -1,4 +1,5 @@
 const redis = require('redis');
+const config = require('./../config');
 
 promisify(redis.RedisClient.prototype);
 promisify(redis.Multi.prototype);
@@ -40,7 +41,7 @@ function makePromiseFunction(func) {
     }
 }
 
-function createClient(options) {
+function createClient(options = config.redis) {
     return new Promise((resolve, reject) => {
         const cache = redis.createClient(options);
 

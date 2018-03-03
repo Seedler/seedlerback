@@ -19,6 +19,8 @@ const collectionName = 'keepers';
 
 const restrictedLoginList = [
     'root',
+    'keeper',
+    'user',
     'test',
     'admin',
     'administrator',
@@ -69,7 +71,7 @@ const keeperModel = {
     },
     email: {
         email: {
-            message: 'Invalid email address',
+            message: 'is invalid',
         },
     },
     password: {
@@ -86,11 +88,14 @@ const keeperModel = {
     },
 };
 
-module.exports = class Keeper {
+class Keeper {
     constructor(params = {}) {
+        // Use login as name if no name
+        params.name = params.name || params.login;
+
         const validation = validate(params, keeperModel);
         if (validation) {
-            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, JSON.stringify(validation));
+            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, validation);
         }
 
         const {
@@ -105,7 +110,7 @@ module.exports = class Keeper {
         } = params;
 
         const {
-            passwordHash = sha1(password + passwordSalt),
+            passwordHash = Keeper.generateHash(password, passwordSalt),
         } = params;
 
         return Object.assign(this, {
@@ -122,9 +127,13 @@ module.exports = class Keeper {
         });
     }
 
-    static getKeeper(params = {}) {
-        const match = db.generateMatchObject(params, ['_id', 'login', 'email']);
+    static generateHash(password = '', salt = '') {
+        return sha1(`${password}:${salt}`);
+    }
 
+    static getFromDB(params = {}) {
+        // Use first key that is not undefined
+        const match = db.generateMatchObject(params, [], {orderedOrKeys: ['_id', 'login', 'email']});
         return db.get(collectionName, {match})
             .then(resultList => {
                 const [keeper] = resultList;
@@ -137,19 +146,31 @@ module.exports = class Keeper {
         ;
     }
 
-    setKeeper() {
+    verifyPassword(password = '') {
+        const {
+            passwordSalt,
+            passwordHash,
+        } = this;
+
+        const currentHash = Keeper.generateHash(password, passwordSalt);
+        return  currentHash === passwordHash;
+    }
+
+    insertIntoDB() {
         const {
             _id,
         } = this;
         if (_id) {
-            return this.updateKeeper();
+            return this.update();
         }
 
         // autoincrement _id will be add to this by object-link
-        return db.insert(collectionName, this, {autoIncrementId: true}).then(() => this);
+        return db.insert(collectionName, this, {autoIncrementId: true, returnNewDocuments: false})
+            .then(() => this)
+        ;
     }
 
-    updateKeeper() {
+    update() {
         const {
             _id,
         } = this;
@@ -165,4 +186,6 @@ module.exports = class Keeper {
 
         return db.update(collectionName, {_id}, {set: preparedKeeper}).then(() => this);
     }
-};
+}
+
+module.exports = Keeper;

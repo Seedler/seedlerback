@@ -1,28 +1,25 @@
 'use strict';
 
-const projectKeeper = require('../libs/projectKeeper');
-const logger = projectKeeper.getLogger('Passport');
+module.exports = function() {
+    const projectKeeper = require('../libs/projectKeeper');
+    const logger = projectKeeper.getLogger('Passport');
+    const Keeper = require('../models/keeper');
 
-// Debug test keeper
-const keeper = {
-    _id: 1,
-    name: 'Тест Тестов',
-    login: 'test',
-    password: '12345',
-    accessLevel: 1,
-};
+    function localLoginHandler(login, password, done) {
+        logger.info(`Passport want to auth user:`, login, password);
 
-function localLoginHandler(login, password, done) {
-    logger.info(`Passport want to auth user:`, login, password);
+        Keeper.getFromDB({login})
+            .then(keeper => {
+                if (keeper.verifyPassword(password)) {
+                    return done(null, keeper);
+                }
 
-    if (keeper.password === password) {
-        return done(null, keeper);
+                return done(null, false);
+            })
+            .catch(err => done(err))
+        ;
     }
 
-    return done(null, false);
-}
-
-module.exports = function() {
     logger.info(`Try to initialize authorization`);
     const passport = require('passport');
     const LocalStrategy = require('passport-local').Strategy;
@@ -67,6 +64,9 @@ module.exports = function() {
     /** @namespace passport.deserializeUser */
     passport.deserializeUser((id, done) => {
         logger.debug(`Auth middleware want to get user by id ${id}`);
-        done(null, keeper);
+        Keeper.getFromDB({_id: id})
+            .then(keeper => done(null, keeper))
+            .catch(err => done(err))
+        ;
     });
 };
