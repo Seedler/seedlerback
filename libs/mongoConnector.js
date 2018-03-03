@@ -41,16 +41,21 @@ function getCollection(collectionName = '', params = {}) {
 }
 
 const generateMatchObject = function(queryParams = {}, keyList = [], options = {}) {
-    const {
+    let {
         match = {},
         negativeKeys = [],
-        orderedOrKeys = [],
+        orKeys = [],
     } = options;
 
+    const globalMatch = match;
+
     if (!Array.isArray(keyList) || !keyList.length) {
-        if (orderedOrKeys.length) {
+        if (orKeys.length) {
             // Use first key that is not undefined
-            keyList = orderedOrKeys;
+            keyList = orKeys;
+        }
+        else if (negativeKeys.length) {
+            keyList = negativeKeys;
         }
         else {
             keyList = Object.keys(queryParams);
@@ -66,7 +71,18 @@ const generateMatchObject = function(queryParams = {}, keyList = [], options = {
             continue;
         }
 
-        const isNegative = negativeKeys.includes(queryKey);
+        const isNegative = negativeKeys.length && negativeKeys.includes(queryKey);
+        const isOr = orKeys.length && orKeys.includes(queryKey);
+        if (isOr) {
+            let orList = globalMatch.$or;
+            if (!orList) {
+                orList = globalMatch.$or = [];
+            }
+            orList.push(match = {});
+        }
+        else {
+            match = globalMatch;
+        }
 
         if (Array.isArray(value)) {
             if (value.length === 1) {
@@ -93,14 +109,9 @@ const generateMatchObject = function(queryParams = {}, keyList = [], options = {
         else {
             match[queryKey] = value;
         }
-
-        // Break on first non-undefined key
-        if (orderedOrKeys.length && orderedOrKeys.includes(queryKey)) {
-            break;
-        }
     }
 
-    return match;
+    return globalMatch;
 };
 
 module.exports = {

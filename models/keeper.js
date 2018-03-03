@@ -133,7 +133,7 @@ class Keeper {
 
     static getFromDB(params = {}) {
         // Use first key that is not undefined
-        const match = db.generateMatchObject(params, [], {orderedOrKeys: ['_id', 'login', 'email']});
+        const match = db.generateMatchObject(params, [], {orKeys: ['_id', 'login', 'email']});
         return db.get(collectionName, {match})
             .then(resultList => {
                 const [keeper] = resultList;
