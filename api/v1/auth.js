@@ -48,7 +48,7 @@ function signup(params = {}) {
         })
         .then(keeperItem => {
             logger.debug(`Signup: create new keeper with id: ${keeperItem.id}`);
-            return keeperItem;
+            return keeperItem.safeData();
         })
     ;
 }
