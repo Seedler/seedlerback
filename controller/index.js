@@ -242,6 +242,20 @@ function checkPermissions(user, methodPermissions = 0) {
     }
 }
 
+function assignByWhiteKeyList(obj = {}, whiteKeyList = []) {
+    const resultObj = {};
+
+    for (let key of whiteKeyList) {
+        const value = obj[key];
+
+        if (value !== void 0) {
+            resultObj[key] = value;
+        }
+    }
+
+    return resultObj;
+}
+
 module.exports = {
     // Middleware for all api-requests
     routeHandler,
@@ -266,4 +280,5 @@ module.exports = {
 
     throwResponseError,
     packageDescription,
+    cloneByWhiteKeyList: assignByWhiteKeyList,
 };

@@ -4,6 +4,7 @@ module.exports = function() {
     const projectKeeper = require('../libs/projectKeeper');
     const logger = projectKeeper.getLogger('Passport');
     const Keeper = require('../models/keeper');
+    const controller = require('../controller');
 
     function localLoginHandler(login, password, done) {
         logger.info(`Passport want to auth user:`, login, password);
@@ -65,7 +66,7 @@ module.exports = function() {
     passport.deserializeUser((id, done) => {
         logger.debug(`Auth middleware want to get user by id ${id}`);
         Keeper.getFromDB({id})
-            .then(keeper => done(null, keeper))
+            .then(keeper => done(null, keeper.safeData()))
             .catch(err => done(err))
         ;
     });

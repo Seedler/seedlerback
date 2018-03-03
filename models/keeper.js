@@ -88,6 +88,15 @@ const keeperModel = {
     },
 };
 
+const safeKeyList = [
+    'id',
+    'login',
+    'name',
+    'email',
+    'updatedAt',
+    'createdAt',
+];
+
 class Keeper {
     constructor(params = {}) {
         // Use login as name if no name
@@ -146,6 +155,10 @@ class Keeper {
         ;
     }
 
+    safeData() {
+        return controller.cloneByWhiteKeyList(this, safeKeyList);
+    }
+
     verifyPassword(password = '') {
         const {
             passwordSalt,
@@ -161,7 +174,7 @@ class Keeper {
             id,
         } = this;
         if (id) {
-            return this.update();
+            return this.updateIntoDB();
         }
 
         // autoincrement id will be add to this by object-link
@@ -170,7 +183,7 @@ class Keeper {
         ;
     }
 
-    update() {
+    updateIntoDB() {
         const {
             id,
         } = this;
