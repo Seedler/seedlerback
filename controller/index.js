@@ -234,7 +234,7 @@ function checkPermissions(user, methodPermissions = 0) {
     const isAccessDenied = accessDenied(user, methodPermissions);
     if (isAccessDenied) {
         if (user) {
-            throwResponseError(STATUS_CODES.NOT_ALLOWED, API_CODES.ACCESS_DENIED, 'You have no power here');
+            throwResponseError(STATUS_CODES.FORBIDDEN, API_CODES.ACCESS_DENIED, 'You have no power here');
         }
         else {
             throwResponseError(STATUS_CODES.UNAUTHORIZED, API_CODES.UNAUTHORIZED, 'You have no power. Authorize, please');
