@@ -38,4 +38,5 @@ module.exports = Object.freeze({
     TREE_NOT_FOUND: 405,
     VARIETY_NOT_FOUND: 406,
     FOREST_NOT_FOUND: 407,
+    TENURE_NOT_FOUND: 408,
 });

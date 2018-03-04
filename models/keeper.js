@@ -150,17 +150,24 @@ class Keeper {
         return sha1(`${password}:${salt}`);
     }
 
-    static getFromDB(params = {}) {
-        // Use first key that is not undefined
+    static getManyFromDB(params = {}) {
         const match = db.generateMatchObject(params, [], {orKeys: ['id', 'login', 'email']});
         return db.get(collectionName, {match})
             .then(resultList => {
+                return resultList.map(keeper => new Keeper(keeper));
+            })
+        ;
+    }
+
+    static getFromDB(params = {}) {
+        return Keeper.getManyFromDB(params)
+            .then(resultList => {
                 const [keeper] = resultList;
                 if (!keeper) {
-                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.KEEPER_NOT_FOUND, `getKeeper: Keeper not found by params: ${JSON.stringify(params)}`);
+                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.KEEPER_NOT_FOUND, `getFromDB: Keeper not found by params: ${JSON.stringify(params)}`);
                 }
 
-                return new Keeper(keeper);
+                return keeper;
             })
         ;
     }

@@ -91,7 +91,7 @@ describe('Test mongodbConnector', () => {
     // Remove all from collection
     it('Flush dbCounter for collection before continue', () => {
         promise = promise
-            .then(() => mongoConnector.checkCollection({name: 'dbCounters'})) // Create collection if not exists
+            .then(() => mongoConnector.checkCollection({name: 'dbCounters', disableIndexId: true})) // Create collection if not exists
             .then(() => mongoConnector.delete(collectionName, {multi: true}))
             .then(() => mongoConnector.delete('dbCounters', {match: {_id: collectionName}}))
         ;

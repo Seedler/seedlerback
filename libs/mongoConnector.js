@@ -16,7 +16,7 @@ function getNextId(collectionName, count = 0) {
 
     return dbObject
         .collection('dbCounters')
-        .findOneAndUpdate({_id: collectionName}, {$set: {_id: collectionName}, $inc: {lastId: count}}, {upsert: true})
+        .findOneAndUpdate({_id: collectionName}, {$setOnInsert: {_id: collectionName}, $inc: {lastId: count}}, {upsert: true})
         .then(result => {
             // Returns null on insert (first upsert on document)
             const value = result.value || {};
@@ -190,14 +190,17 @@ module.exports = {
             name: collectionName,
             indexes = [],
             options = {},
+            disableIndexId = false,
         } = collectionParams;
 
         // Every collection will have "id" index
         const normalizedIndexList = indexes.map(normalizeIndexItem);
-        const idIndexKey = {id: 1};
-        const existedIdIndexKey = normalizedIndexList.find(indexItem => isEqual(indexItem[0], idIndexKey));
-        if (!existedIdIndexKey) {
-            normalizedIndexList.push([idIndexKey, {unique: 1}]);
+        if (!disableIndexId) {
+            const idIndex = [{id: 1}, {unique: 1}];
+            const existedIdIndexKey = normalizedIndexList.find(indexItem => isEqual(indexItem[0], idIndex[0]));
+            if (!existedIdIndexKey) {
+                normalizedIndexList.push(idIndex);
+            }
         }
 
         let collection;

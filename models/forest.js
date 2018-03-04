@@ -1,17 +1,145 @@
 'use strict';
 
-module.exports = class Forest {
-    constructor(params = {}) {
-        const {
+const validate = require('validate.js');
+const controller = require('../controller');
+const projectKeeper = require('../libs/projectKeeper');
 
+const {
+    db = {},
+} = projectKeeper;
+
+const {
+    ACCESS_LEVELS = {},
+    API_CODES = {},
+    STATUS_CODES = {},
+} = controller;
+
+const safeKeyList = [
+    'id',
+    'name',
+    'ownerId',
+    'accessLevel',
+    'updatedAt',
+    'createdAt',
+];
+
+const collectionName = 'forests';
+const namePattern = /[a-z0-9\s]+/i;
+const forestModel = {
+    name: {
+        presence: {
+            allowEmpty: false,
+            message: 'is required',
+            code: API_CODES.REQUIRED_INPUT,
+        },
+        format: {
+            pattern: namePattern,
+            message: 'can only contain a-z and 0-9 with white spaces',
+            code: API_CODES.INVALID_SYMBOL,
+        },
+        length: {
+            minimum: 4,
+            maximum: 50,
+            tooShort: 'needs to have %{count} symbols or more',
+            tooLong: 'needs to have maximum %{count} symbols',
+            code: API_CODES.INVALID_LENGTH,
+        }
+    },
+    ownerId: {
+        presence: {
+            allowEmpty: false,
+            message: 'is required',
+            code: API_CODES.REQUIRED_INPUT,
+        },
+    },
+};
+
+class Forest {
+    constructor(params = {}) {
+        const validation = validate(params, forestModel);
+        if (validation) {
+            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, validation);
+        }
+
+        const {
+            id,
+            name = '',
+            accessLevel = ACCESS_LEVELS.LANDOWNER,
+            ownerId,
+
+            updatedAt = new Date(),
+            createdAt = new Date(),
         } = params;
 
-        const createdAt = new Date();
-
         return Object.assign(this, {
+            id,
+            name,
+            accessLevel,
 
-            updatedAt: createdAt,
+            ownerId,
+            updatedAt,
             createdAt,
         });
     }
-};
+
+    static getManyFromDB(params = {}) {
+        const match = db.generateMatchObject(params, ['id', 'ownerId']);
+        return db.get(collectionName, {match})
+            .then(resultList => {
+                // if (!resultList.length) {
+                //     controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.FOREST_NOT_FOUND, `getKeeper: Forest not found by params: ${JSON.stringify(params)}`);
+                // }
+
+                return resultList.map(forest => new Forest(forest));
+            })
+        ;
+    }
+
+    static getFromDB(params = {}) {
+        return Forest.getManyFromDB(params)
+            .then(resultList => {
+                const [forest] = resultList;
+                if (!forest) {
+                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.FOREST_NOT_FOUND, `getFromDB: Forest not found by params: ${JSON.stringify(params)}`);
+                }
+
+                return forest;
+            })
+        ;
+    }
+
+    safeData() {
+        return controller.cloneByWhiteKeyList(this, safeKeyList);
+    }
+
+    insertIntoDB() {
+        const {
+            id,
+        } = this;
+        if (id) {
+            return this.updateIntoDB();
+        }
+
+        // autoincrement id will be add to this by object-link
+        return db.insert(collectionName, this, {autoIncrementId: true, returnNewDocuments: false})
+            .then(() => this)
+        ;
+    }
+
+    updateIntoDB() {
+        const {
+            id,
+        } = this;
+        if (!id) {
+            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, `updateIntoDB: Passed forest item should be set by insertIntoDB first (db id is not exists)`);
+        }
+
+        // Create new instance to update into db
+        const preparedItem = new Forest(this);
+        preparedItem.updatedAt = new Date();
+
+        return db.update(collectionName, {id}, {set: preparedItem}).then(() => this);
+    }
+}
+
+module.exports = Forest;

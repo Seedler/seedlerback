@@ -8,6 +8,10 @@ module.exports = Object.freeze({
     ROOT: 3,
     SYSTEM: 4,
 
+    // Additional access levels (forests)
+    LINK: 2,
+    WHITELIST: 3,
+
     // Tenure privileges
     POACHER: 0, // Let it be
     WATCHER: 1, // Read only
