@@ -192,6 +192,14 @@ module.exports = {
             options = {},
         } = collectionParams;
 
+        // Every collection will have "id" index
+        const normalizedIndexList = indexes.map(normalizeIndexItem);
+        const idIndexKey = {id: 1};
+        const existedIdIndexKey = normalizedIndexList.find(indexItem => isEqual(indexItem[0], idIndexKey));
+        if (!existedIdIndexKey) {
+            normalizedIndexList.push([idIndexKey, {unique: 1}]);
+        }
+
         let collection;
         // Create collection at first
         return dbObject.createCollection(collectionName, options)
@@ -207,14 +215,8 @@ module.exports = {
                     if (currentIndexItem.name === '_id_') {
                         return false;
                     }
-                    return !indexes.find(indexItem => {
-                        // Index item could be object with index keys or array with keys and options
-                        // Convert to array
-                        if (!Array.isArray(indexItem)) {
-                            indexItem = [indexItem];
-                        }
+                    return !normalizedIndexList.find(indexItem => {
                         const [indexKeys = {}] = indexItem;
-
                         return isEqual(indexKeys, currentIndexItem.key)
                     })
                 });
@@ -227,15 +229,6 @@ module.exports = {
                         .catch(err => logger.info(`Failed to drop index for ${collectionName} called ${currentIndexItem.name}:`, err))
                     ;
                 }
-
-                // Every collection will have "id" index
-                const normalizedIndexList = indexes.map(normalizeIndexItem);
-                const idIndexKey = {id: 1};
-                const existedIdIndexKey = currentIndexList.find(currentIndexItem => isEqual(currentIndexItem.key, idIndexKey));
-                if (!existedIdIndexKey) {
-                    normalizedIndexList.push([idIndexKey, {unique: 1}]);
-                }
-
 
                 // Create index
                 for (let indexItem of normalizedIndexList) {
