@@ -15,7 +15,6 @@ const {
     API_CODES = {},
     STATUS_CODES = {},
 } = controller;
-const collectionName = 'keepers';
 
 const restrictedLoginList = [
     'root',
@@ -30,11 +29,19 @@ const restrictedLoginList = [
     'help',
     'techsupport',
 ];
+const safeKeyList = [
+    'id',
+    'login',
+    'name',
+    'email',
+    'updatedAt',
+    'createdAt',
+];
 
+const collectionName = 'keepers';
 const loginPattern = /\w+(\.(?=\w))?\w*/i;
 const namePattern = /[a-z0-9\s]+/i;
 const passwordPattern = /[\w\s.,@$~#%&?*:;!^<>]+/i;
-
 const keeperModel = {
     login: {
         format: {
@@ -99,15 +106,6 @@ const keeperModel = {
         }
     },
 };
-
-const safeKeyList = [
-    'id',
-    'login',
-    'name',
-    'email',
-    'updatedAt',
-    'createdAt',
-];
 
 class Keeper {
     constructor(params = {}) {
