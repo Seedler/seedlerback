@@ -40,50 +40,62 @@ const keeperModel = {
         format: {
             pattern: loginPattern,
             message: 'can only contain a-z and 0-9',
+            code: API_CODES.INVALID_SYMBOL,
         },
         presence: {
             allowEmpty: false,
             message: 'is required',
+            code: API_CODES.REQUIRED_INPUT,
         },
         length: {
             minimum: 4,
             maximum: 20,
             tooShort: 'needs to have %{count} symbols or more',
             tooLong: 'needs to have maximum %{count} symbols',
+            code: API_CODES.INVALID_LENGTH,
         },
-        exclusion: restrictedLoginList,
+        exclusion: {
+            within: restrictedLoginList,
+            code: API_CODES.RESERVED_WORD,
+        },
     },
     name: {
         presence: {
             allowEmpty: false,
             message: 'is required',
+            code: API_CODES.REQUIRED_INPUT,
         },
         format: {
             pattern: namePattern,
             message: 'can only contain a-z and 0-9 with white spaces',
+            code: API_CODES.INVALID_SYMBOL,
         },
         length: {
             minimum: 4,
             maximum: 50,
             tooShort: 'needs to have %{count} symbols or more',
             tooLong: 'needs to have maximum %{count} symbols',
+            code: API_CODES.INVALID_LENGTH,
         }
     },
     email: {
         email: {
             message: 'is invalid',
+            code: API_CODES.NOT_EMAIL,
         },
     },
     password: {
         format: {
             pattern: passwordPattern,
             message: 'can only contain A-z and 0-9 with white spaces and dots',
+            code: API_CODES.INVALID_SYMBOL,
         },
         length: {
             minimum: 6,
             maximum: 32,
             tooShort: 'needs to have %{count} symbols or more',
             tooLong: 'needs to have maximum %{count} symbols',
+            code: API_CODES.INVALID_LENGTH,
         }
     },
 };
