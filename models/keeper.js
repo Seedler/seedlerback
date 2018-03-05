@@ -172,7 +172,7 @@ class Keeper {
         ;
     }
 
-    safeData() {
+    get safeData() {
         return controller.cloneByWhiteKeyList(this, safeKeyList);
     }
 

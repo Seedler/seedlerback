@@ -17,5 +17,5 @@ module.exports = Object.freeze({
     WATCHER: 1, // Read only
     SURVEYOR: 2, // Read only with editing suggestions
     TENANT: 3, // Editor
-    LANDOWNER: 4, // Full privileges for forest editing
+    LANDOWNER: 4, // Full privileges for garden editing
 });

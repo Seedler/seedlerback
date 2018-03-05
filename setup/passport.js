@@ -66,7 +66,7 @@ module.exports = function() {
     passport.deserializeUser((id, done) => {
         logger.debug(`Auth middleware want to get user by id ${id}`);
         Keeper.getFromDB({id})
-            .then(keeper => done(null, keeper.safeData()))
+            .then(keeper => done(null, keeper.safeData))
             .catch(err => done(err))
         ;
     });

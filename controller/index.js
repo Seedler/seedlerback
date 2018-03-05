@@ -242,7 +242,7 @@ function checkPermissions(user, methodPermissions = 0) {
     }
 }
 
-function assignByWhiteKeyList(obj = {}, whiteKeyList = []) {
+function cloneByWhiteKeyList(obj = {}, whiteKeyList = []) {
     const resultObj = {};
 
     for (let key of whiteKeyList) {
@@ -254,6 +254,14 @@ function assignByWhiteKeyList(obj = {}, whiteKeyList = []) {
     }
 
     return resultObj;
+}
+
+function extractUserFromParams(params = {}) {
+    const {
+        [sRequestObject]: req = {},
+    } = params;
+
+    return req.user;
 }
 
 module.exports = {
@@ -280,5 +288,6 @@ module.exports = {
 
     throwResponseError,
     packageDescription,
-    cloneByWhiteKeyList: assignByWhiteKeyList,
+    cloneByWhiteKeyList,
+    extractUserFromParams,
 };

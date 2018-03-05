@@ -54,7 +54,7 @@ const forestModel = {
     },
 };
 
-class Forest {
+class Garden {
     constructor(params = {}) {
         const validation = validate(params, forestModel);
         if (validation) {
@@ -87,28 +87,28 @@ class Forest {
         return db.get(collectionName, {match})
             .then(resultList => {
                 // if (!resultList.length) {
-                //     controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.FOREST_NOT_FOUND, `getKeeper: Forest not found by params: ${JSON.stringify(params)}`);
+                //     controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.FOREST_NOT_FOUND, `getKeeper: Garden not found by params: ${JSON.stringify(params)}`);
                 // }
 
-                return resultList.map(forest => new Forest(forest));
+                return resultList.map(garden => new Garden(garden));
             })
         ;
     }
 
     static getFromDB(params = {}) {
-        return Forest.getManyFromDB(params)
+        return Garden.getManyFromDB(params)
             .then(resultList => {
-                const [forest] = resultList;
-                if (!forest) {
-                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.FOREST_NOT_FOUND, `getFromDB: Forest not found by params: ${JSON.stringify(params)}`);
+                const [garden] = resultList;
+                if (!garden) {
+                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.FOREST_NOT_FOUND, `getFromDB: Garden not found by params: ${JSON.stringify(params)}`);
                 }
 
-                return forest;
+                return garden;
             })
         ;
     }
 
-    safeData() {
+    get safeData() {
         return controller.cloneByWhiteKeyList(this, safeKeyList);
     }
 
@@ -131,15 +131,15 @@ class Forest {
             id,
         } = this;
         if (!id) {
-            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, `updateIntoDB: Passed forest item should be set by insertIntoDB first (db id is not exists)`);
+            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, `updateIntoDB: Passed garden item should be set by insertIntoDB first (db id is not exists)`);
         }
 
         // Create new instance to update into db
-        const preparedItem = new Forest(this);
+        const preparedItem = new Garden(this);
         preparedItem.updatedAt = new Date();
 
         return db.update(collectionName, {id}, {set: preparedItem}).then(() => this);
     }
 }
 
-module.exports = Forest;
+module.exports = Garden;

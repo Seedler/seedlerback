@@ -9,15 +9,14 @@ const passport = require('passport');
 const {
     sRequestObject,
     sResponseObject,
-    ACCESS_LEVELS,
-    API_CODES,
-    STATUS_CODES,
+    ACCESS_LEVELS = {},
+    API_CODES = {},
+    STATUS_CODES = {},
 } = controller;
 
 logger.info(`Load api`);
 
 function signup(params = {}) {
-    logger.debug(`Signup: try to create new keeper with params: `, JSON.stringify(params, null, 2));
     // Check for keeper existence
     return Keeper.getFromDB(params)
         .then(user => {
@@ -42,13 +41,11 @@ function signup(params = {}) {
                 throw err;
             }
 
-            const keeper = new Keeper(params);
-
-            return keeper.insertIntoDB();
+            return new Keeper(params).insertIntoDB();
         })
-        .then(keeperItem => {
-            logger.debug(`Signup: create new keeper with id: ${keeperItem.id}`);
-            return keeperItem.safeData();
+        .then(keeper => {
+            logger.debug(`Signup: create new keeper with id: ${keeper.id}`);
+            return keeper.safeData;
         })
     ;
 }
@@ -81,10 +78,8 @@ function login(params = {}) {
         [sRequestObject]: req = {},
         [sResponseObject]: res = {},
     } = params;
-    // Deny duplicate login
-    const {
-        user,
-    } = req;
+
+    const user = controller.extractUserFromParams(params);
     if (user) {
         controller.throwResponseError(STATUS_CODES.FORBIDDEN, API_CODES.ALREADY_AUTHORIZED, `You have to logout ${user.login} before login, ${user.name}`);
     }
@@ -101,14 +96,7 @@ function logout(params = {}) {
 }
 
 function getAuthUser(params = {}) {
-    const {
-        [sRequestObject]: req = {},
-    } = params;
-    const {
-        user,
-    } = req;
-
-    return user;
+    return controller.extractUserFromParams(params);
 }
 
 module.exports = {

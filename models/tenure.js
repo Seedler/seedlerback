@@ -16,7 +16,7 @@ const {
 
 const safeKeyList = [
     'id',
-    'forestId',
+    'gardenId',
     'keeperId',
     'accessLevel',
     'updatedAt',
@@ -25,7 +25,7 @@ const safeKeyList = [
 
 const collectionName = 'tenures';
 const tenureModel = {
-    forestId: {
+    gardenId: {
         presence: {
             allowEmpty: false,
             message: 'is required',
@@ -50,7 +50,7 @@ class Tenure {
 
         const {
             id,
-            forestId,
+            gardenId,
             keeperId,
             accessLevel = ACCESS_LEVELS.POACHER,
             updatedAt = new Date(),
@@ -59,7 +59,7 @@ class Tenure {
 
         return Object.assign(this, {
             id,
-            forestId,
+            gardenId,
             keeperId,
             accessLevel,
 
@@ -69,7 +69,7 @@ class Tenure {
     }
 
     static getManyFromDB(params = {}) {
-        const match = db.generateMatchObject(params, ['id', 'forestId', 'keeperId']);
+        const match = db.generateMatchObject(params, ['id', 'gardenId', 'keeperId']);
         return db.get(collectionName, {match})
             .then(resultList => {
                 return resultList.map(tenure => new Tenure(tenure));
@@ -90,7 +90,7 @@ class Tenure {
         ;
     }
 
-    safeData() {
+    get safeData() {
         return controller.cloneByWhiteKeyList(this, safeKeyList);
     }
 
