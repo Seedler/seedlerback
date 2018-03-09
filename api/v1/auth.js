@@ -14,8 +14,6 @@ const {
     STATUS_CODES = {},
 } = controller;
 
-logger.info(`Load api`);
-
 function signup(params = {}) {
     // Check for keeper existence
     return Keeper.getFromDB(params)

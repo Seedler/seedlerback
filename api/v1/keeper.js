@@ -13,8 +13,6 @@ const {
 
 const wrapMethod = controller.wrapMethod || (func => func);
 
-logger.info(`Load api`);
-
 function getUsers(params = {}) {
     return db.get();
 }

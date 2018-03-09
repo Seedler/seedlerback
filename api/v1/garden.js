@@ -11,8 +11,6 @@ const {
 const Garden = require('../../models/garden');
 const Tenure = require('../../models/tenure');
 
-logger.info(`Load api`);
-
 async function addGarden(params = {}) {
     const garden = await new Garden(params).insertIntoDB();
 
