@@ -58,7 +58,7 @@ describe('Test mongodbConnector', () => {
 
         const match = mongoConnector.generateMatchObject({_id: testDoc._id});
         promise = promise
-            .then(() => mongoConnector.update(collectionName, {match, set: changeItem}))
+            .then(() => mongoConnector.update(collectionName, match, {set: changeItem}))
             .catch(err => expect(err).to.be(null))
         ;
         return promise;
