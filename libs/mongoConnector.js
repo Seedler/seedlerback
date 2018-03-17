@@ -45,6 +45,7 @@ function generateMatchObject(queryParams = {}, keyList = [], options = {}) {
         match = {},
         negativeKeys = [],
         orKeys = [],
+        strict = true,
     } = options;
 
     const globalMatch = match;
@@ -109,6 +110,10 @@ function generateMatchObject(queryParams = {}, keyList = [], options = {}) {
         else {
             match[queryKey] = value;
         }
+    }
+    // Throw error if match has no params
+    if (strict && !Object.keys(globalMatch).length) {
+        throw new Error(`Query params should have more keys of possible list: ${keyList}`);
     }
 
     return globalMatch;
