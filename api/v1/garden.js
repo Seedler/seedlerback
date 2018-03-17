@@ -17,12 +17,17 @@ const Tenure = require('../../models/tenure');
 
 async function createGarden(params = {}) {
     const {
-        id,
+        id: keeperId,
     } = extractUserFromParams(params);
 
-    params.ownerId = id;
-
+    params.ownerId = keeperId;
+    // Add new garden
     const garden = await new Garden(params).insertIntoDB();
+    const {
+        id: gardenId,
+    } = garden;
+    // Create keeper's tenure of the garden
+    await new Tenure({keeperId, gardenId, accessLevel: ACCESS_LEVELS.LANDOWNER});
 
     return garden.safeData;
 }
