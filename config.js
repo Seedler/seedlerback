@@ -27,7 +27,7 @@ module.exports = {
                 ],
             },
             {
-                name: 'forests',
+                name: 'gardens',
                 indexes: [
                 ],
             },
@@ -35,8 +35,8 @@ module.exports = {
                 name: 'tenures',
                 indexes: [
                     {keeperId: 1},
-                    {forestId: 1},
-                    [{keeperId: 1, forestId: 1}, {unique: true}],
+                    {gardenId: 1},
+                    [{keeperId: 1, gardenId: 1}, {unique: true}],
                 ],
             },
         ],

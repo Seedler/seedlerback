@@ -23,9 +23,9 @@ const safeKeyList = [
     'createdAt',
 ];
 
-const collectionName = 'forests';
+const collectionName = 'gardens';
 const namePattern = /[a-z0-9\s]+/i;
-const forestModel = {
+const gardenModel = {
     name: {
         presence: {
             allowEmpty: false,
@@ -56,7 +56,7 @@ const forestModel = {
 
 class Garden {
     constructor(params = {}) {
-        const validation = validate(params, forestModel);
+        const validation = validate(params, gardenModel);
         if (validation) {
             controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, validation);
         }
@@ -87,7 +87,7 @@ class Garden {
         return db.get(collectionName, {match})
             .then(resultList => {
                 // if (!resultList.length) {
-                //     controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.FOREST_NOT_FOUND, `getKeeper: Garden not found by params: ${JSON.stringify(params)}`);
+                //     controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.GARDEN_NOT_FOUND, `getKeeper: Garden not found by params: ${JSON.stringify(params)}`);
                 // }
 
                 return resultList.map(garden => new Garden(garden));
@@ -100,7 +100,7 @@ class Garden {
             .then(resultList => {
                 const [garden] = resultList;
                 if (!garden) {
-                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.FOREST_NOT_FOUND, `getFromDB: Garden not found by params: ${JSON.stringify(params)}`);
+                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.GARDEN_NOT_FOUND, `getFromDB: Garden not found by params: ${JSON.stringify(params)}`);
                 }
 
                 return garden;

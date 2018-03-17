@@ -8,7 +8,7 @@ module.exports = Object.freeze({
     ROOT: 3,
     SYSTEM: 4,
 
-    // Additional access levels (forests)
+    // Additional access levels (gardens)
     LINK: 2,
     WHITELIST: 3,
 

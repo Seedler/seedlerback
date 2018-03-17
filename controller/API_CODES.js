@@ -15,7 +15,7 @@ module.exports = Object.freeze({
 
     KEEPER_ACCESS_DENIED: 202,
     SEED_ACCESS_DENIED: 203,
-    FOREST_ACCESS_DENIED: 204,
+    GARDEN_ACCESS_DENIED: 204,
 
     // Invalid input error statuses starts with 300
     INVALID_INPUT: 300,
@@ -37,6 +37,6 @@ module.exports = Object.freeze({
     SEED_NOT_FOUND: 404,
     TREE_NOT_FOUND: 405,
     VARIETY_NOT_FOUND: 406,
-    FOREST_NOT_FOUND: 407,
+    GARDEN_NOT_FOUND: 407,
     TENURE_NOT_FOUND: 408,
 });

@@ -81,9 +81,9 @@ class Tenure {
         return Tenure.getManyFromDB(params)
             .then(resultList => {
                 const [tenure] = resultList;
-                if (!tenure) {
-                    controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.TENURE_NOT_FOUND, `getFromDB: Tenure not found by params: ${JSON.stringify(params)}`);
-                }
+                // if (!tenure) {
+                //     controller.throwResponseError(STATUS_CODES.NOT_FOUND, API_CODES.TENURE_NOT_FOUND, `getFromDB: Tenure not found by params: ${JSON.stringify(params)}`);
+                // }
 
                 return tenure;
             })

@@ -4,15 +4,18 @@
 // const logger = projectKeeper.getLogger('api/v1/garden');
 const controller = require('../../controller');
 const {
+    API_CODES = {},
+    STATUS_CODES = {},
     ACCESS_LEVELS = {},
     wrapMethod = func => func,
     extractUserFromParams = func => func,
+    throwResponseError = func => func,
 } = controller;
 
 const Garden = require('../../models/garden');
 const Tenure = require('../../models/tenure');
 
-async function addGarden(params = {}) {
+async function createGarden(params = {}) {
     const {
         id,
     } = extractUserFromParams(params);
@@ -32,6 +35,32 @@ function getGardens(params = {}) {
     return Garden.getManyFromDB({ownerId});
 }
 
+async function getOneGarden(params = {}) {
+    const {
+        gardenId,
+    } = params;
+    const {
+        id: keeperId = 0,
+    } = extractUserFromParams(params);
+
+    const garden = await Garden.getFromDB({id: gardenId});
+
+    if (garden.ownerId === keeperId) {
+        return garden;
+    }
+
+    const tenure = await Tenure.getFromDB({keeperId, gardenId});
+    if (!tenure) {
+        throwResponseError(STATUS_CODES.FORBIDDEN, API_CODES.GARDEN_ACCESS_DENIED, 'You have no power here');
+    }
+
+    if (tenure.accessLevel > ACCESS_LEVELS.POACHER) {
+        return garden;
+    }
+
+    throwResponseError(STATUS_CODES.FORBIDDEN, API_CODES.GARDEN_ACCESS_DENIED, 'You have no power here');
+}
+
 async function getAvailableList(params = {}) {
     const {
         id: keeperId = 0,
@@ -45,7 +74,8 @@ async function getAvailableList(params = {}) {
 
 module.exports = {
     accessLevel: ACCESS_LEVELS.KEEPER,
-    add: wrapMethod(addGarden),
+    create: wrapMethod(createGarden),
+    read: wrapMethod(getOneGarden),
     list: wrapMethod(getGardens),
     listAvailable: wrapMethod(getAvailableList),
 };
