@@ -341,13 +341,12 @@ module.exports = {
         ;
     },
 
-    update(collectionName, params = {}, options = {}) {
+    update(collectionName, match = {}, options = {}) {
         const {
-            match = {},
             set = {},
             unset = {},
             multi = false,
-        } = params;
+        } = options;
 
         const updateObject = {};
         if (Object.keys(set).length) {
@@ -366,11 +365,10 @@ module.exports = {
         ;
     },
 
-    delete(collectionName, params = {}) {
+    delete(collectionName, match = {}, options = {}) {
         const {
-            match = {},
             multi = false,
-        } = params;
+        } = options;
 
         // Get the documents collection
         return getCollection(collectionName, {strict: true})

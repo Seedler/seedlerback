@@ -16,6 +16,7 @@ module.exports = Object.freeze({
     KEEPER_ACCESS_DENIED: 202,
     SEED_ACCESS_DENIED: 203,
     GARDEN_ACCESS_DENIED: 204,
+    TENURE_ACCESS_DENIED: 205,
 
     // Invalid input error statuses starts with 300
     INVALID_INPUT: 300,
@@ -27,6 +28,11 @@ module.exports = Object.freeze({
     REQUIRED_INPUT: 306,
     RESERVED_WORD: 307,
     NOT_EMAIL: 308,
+    INVALID_ID: 309,
+
+    TENURE_ALREADY_EXISTS: 320,
+
+    INVALID_ACCESS_LEVEL: 330,
 
     // If something not found error would start from 400
     NOT_FOUND: 400,

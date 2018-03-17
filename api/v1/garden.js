@@ -27,7 +27,7 @@ async function createGarden(params = {}) {
         id: gardenId,
     } = garden;
     // Create keeper's tenure of the garden
-    await new Tenure({keeperId, gardenId, accessLevel: ACCESS_LEVELS.LANDOWNER});
+    await new Tenure({keeperId, gardenId, accessLevel: ACCESS_LEVELS.LANDOWNER}).insertIntoDB();
 
     return garden.safeData;
 }
@@ -54,16 +54,9 @@ async function getOneGarden(params = {}) {
         return garden;
     }
 
-    const tenure = await Tenure.getFromDB({keeperId, gardenId});
-    if (!tenure) {
-        throwResponseError(STATUS_CODES.FORBIDDEN, API_CODES.GARDEN_ACCESS_DENIED, 'You have no power here');
-    }
+    await Tenure.checkTenantAccess(params, ACCESS_LEVELS.WATCHER);
 
-    if (tenure.accessLevel > ACCESS_LEVELS.POACHER) {
-        return garden;
-    }
-
-    throwResponseError(STATUS_CODES.FORBIDDEN, API_CODES.GARDEN_ACCESS_DENIED, 'You have no power here');
+    return garden;
 }
 
 async function getAvailableList(params = {}) {
@@ -72,7 +65,10 @@ async function getAvailableList(params = {}) {
     } = extractUserFromParams(params);
 
     const tenures = await Tenure.getManyFromDB({keeperId});
-    const gardenId = tenures.map(tenure => tenure.gardenId);
+    const gardenId = tenures
+        .filter(({accessLevel}) => accessLevel > ACCESS_LEVELS.POACHER && accessLevel < ACCESS_LEVELS.LANDOWNER)
+        .map(tenure => tenure.gardenId)
+    ;
 
     return Garden.getManyFromDB({id: gardenId});
 }

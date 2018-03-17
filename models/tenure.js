@@ -90,6 +90,24 @@ class Tenure {
         ;
     }
 
+    static async checkTenantAccess(params = {}, accessLevel = ACCESS_LEVELS.TENANT) {
+        const {
+            id: keeperId,
+        } = controller.extractUserFromParams(params);
+        const {
+            gardenId,
+        } = params;
+
+        if (typeof gardenId !== 'number') {
+            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_ID, 'Type of gardenId should be a number');
+        }
+
+        const keeperTenure = await Tenure.getFromDB({keeperId, gardenId});
+        if (!keeperTenure || keeperTenure.accessLevel < accessLevel) {
+            controller.throwResponseError(STATUS_CODES.FORBIDDEN, API_CODES.TENURE_ACCESS_DENIED, 'You have no power here');
+        }
+    }
+
     get safeData() {
         return controller.cloneByWhiteKeyList(this, safeKeyList);
     }
@@ -121,6 +139,17 @@ class Tenure {
         preparedItem.updatedAt = new Date();
 
         return db.update(collectionName, {id}, {set: preparedItem}).then(() => this);
+    }
+
+    deleteFromDB() {
+        const {
+            id,
+        } = this;
+        if (!id) {
+            controller.throwResponseError(STATUS_CODES.BAD_REQUEST, API_CODES.INVALID_INPUT, `updateIntoDB: Passed tenure item should be set by insertIntoDB first (db id is not exists)`);
+        }
+
+        return db.delete(collectionName, {match: {id}});
     }
 }
 
