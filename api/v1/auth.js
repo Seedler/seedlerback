@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * @module Auth
+ */
+
+
 const projectKeeper = require('../../libs/projectKeeper');
 const logger = projectKeeper.getLogger('api/v1/auth');
 const controller = require('../../controller');
@@ -51,7 +56,10 @@ function signup(params = {}) {
 // TODO: promisify passport methods
 function passportLoginHandler(req, res) {
     return new Promise((resolve, reject) => {
-        /** @namespace passport.authenticate */
+        /**
+         * @private
+         * @namespace passport.authenticate
+         * */
         passport.authenticate('local', (err, user) => {
             if (err) {
                 reject(err);
@@ -98,6 +106,14 @@ function getAuthUser(params = {}) {
 }
 
 module.exports = {
+    /**
+     * @name Signup
+     * @path {POST} /api/v1/auth/signup
+     * @body {string} login
+     * @body {string} email
+     * @body {string} password
+     * @response {object} Keeper - New keeper with its id
+     */
     signup: controller.wrapMethod(signup),
     login: controller.wrapMethod(login),
     logout: controller.wrapMethod(logout, {accessLevel: ACCESS_LEVELS.KEEPER}),

@@ -33,5 +33,9 @@
     "test": "mocha --exit"
   },
   "author": "Dmitriy Asondo",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "jsdoc": "^3.5.5",
+    "jsdoc-http-plugin": "^0.3.0"
+  }
 }
